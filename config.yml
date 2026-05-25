@@ -1,0 +1,21 @@
+---
+logging:
+  level: INFO
+  loggers:
+    com.rupesh.ems: DEBUG
+database:
+  driverClass: org.postgresql.Driver
+
+  user: postgres
+  password: postgres
+
+  url: jdbc:postgresql://localhost:5433/ems
+
+  properties:
+    charSet: UTF-8
+
+  maxWaitForConnection: 1s
+  validationQuery: "SELECT 1"
+
+  minSize: 8
+  maxSize: 32
