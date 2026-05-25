@@ -1,6 +1,7 @@
 package com.rupesh.ems;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.rupesh.ems.auth.JWTConfig;
 
 import io.dropwizard.core.Configuration;
 import io.dropwizard.db.DataSourceFactory;
@@ -23,4 +24,16 @@ public class EventManagementSystemConfiguration extends Configuration {
         this.database = database;
     }
 
+    @Valid
+    private JWTConfig jwtConfig = new JWTConfig();
+
+    @JsonProperty("jwt")
+    public JWTConfig geJwtConfig(){
+        return jwtConfig;
+    }
+
+    @JsonProperty("jwt")
+    public void setJWTConfig(JWTConfig jwtConfig){
+        this.jwtConfig = jwtConfig;
+    }
 }

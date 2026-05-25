@@ -19,3 +19,7 @@ database:
 
   minSize: 8
   maxSize: 32
+
+jwt:
+  secret: "super-secret-key"
+  expireInMilliSec: 3600000
