@@ -1,6 +1,7 @@
 package com.rupesh.ems;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.rupesh.ems.auth.BootstrapAdminConfiguration;
 import com.rupesh.ems.auth.JWTConfig;
 
 import io.dropwizard.core.Configuration;
@@ -36,4 +37,19 @@ public class EventManagementSystemConfiguration extends Configuration {
     public void setJWTConfig(JWTConfig jwtConfig){
         this.jwtConfig = jwtConfig;
     }
+
+    @Valid
+    private BootstrapAdminConfiguration bootstrapAdminConfiguration = new BootstrapAdminConfiguration();
+
+    @JsonProperty("bootstrapadmin")
+    public BootstrapAdminConfiguration geBootstrapAdminConfiguration(){
+        return bootstrapAdminConfiguration;
+    }
+
+    @JsonProperty("bootstrapadmin")
+    public void setBootstrapAdminConfiguration(BootstrapAdminConfiguration configuration){
+        bootstrapAdminConfiguration = configuration;
+    }
+
+
 }

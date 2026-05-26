@@ -2,6 +2,8 @@ package com.rupesh.ems;
 
 import org.hibernate.SessionFactory;
 
+import com.rupesh.ems.Util.PasswordUtil;
+import com.rupesh.ems.auth.BootstrapAdminService;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.db.UserDao;
 
@@ -40,8 +42,17 @@ public class EventManagementSystemApplication extends Application<EventManagemen
         
         SessionFactory sessionFactory = hibernateBundle.getSessionFactory();
 
+        PasswordUtil passwordUtil = new PasswordUtil();
+
         UserDao userDao = new UserDao(sessionFactory);
+
+        BootstrapAdminService bootstrapAdminService= new BootstrapAdminService(userDao,passwordUtil);
         
+        bootstrapAdminService.ensureAdminExists(configuration.geBootstrapAdminConfiguration().getName(),
+    configuration.geBootstrapAdminConfiguration().getEmail(),configuration.geBootstrapAdminConfiguration().getPassword(),
+    configuration.geBootstrapAdminConfiguration().isEnabled());
+        
+    
     }
 
 }

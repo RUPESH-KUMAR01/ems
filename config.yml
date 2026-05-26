@@ -23,3 +23,8 @@ database:
 jwt:
   secret: "super-secret-key"
   expireInMilliSec: 3600000
+
+bootstrapadmin:
+  name: "admin"
+  email: "admin@ems.com"
+  password: "super-secret"

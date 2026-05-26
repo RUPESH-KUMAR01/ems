@@ -18,11 +18,11 @@ public class User {
     @Column(name = "name",nullable = false)
     private String name;
 
-    @Column(name = "password_hash",nullable = false)
+    @Column(name = "password_hash", nullable = false, length = 60)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
+    @Column(name = "role",nullable = false)
     private Role role = Role.USER;
 
     public User(String email,String name,String passwordHash,Role role){
