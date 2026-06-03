@@ -3,6 +3,7 @@ package com.rupesh.ems.core;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "users")
@@ -11,13 +12,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     @Email
     @Column(name = "email",unique = true , nullable = false)
     private String email;
 
+    @NotBlank
     @Column(name = "name",nullable = false)
     private String name;
 
+    @NotBlank
     @Column(name = "password_hash", nullable = false, length = 60)
     private String passwordHash;
 

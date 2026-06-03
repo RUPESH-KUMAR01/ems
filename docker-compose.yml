@@ -19,3 +19,8 @@ services:
 
 volumes:
   postgres_data:
+
+hibernate:
+  hbm2ddlAuto: update
+  showSql: true
+  formatSql: true

@@ -1,5 +1,7 @@
 package com.rupesh.ems.auth;
 
+import java.util.Optional;
+
 import com.rupesh.ems.Util.PasswordUtil;
 import com.rupesh.ems.core.Role;
 import com.rupesh.ems.core.User;
@@ -19,10 +21,11 @@ public class BootstrapAdminService {
         if(!isEnabled){
             return;
         }
-        User exisingUser = userDao.findByEmail(email);
-        if(exisingUser!=null){
-            exisingUser.setRole(Role.ADMIN);
-            userDao.update(exisingUser);
+        Optional<User> exisingUser = userDao.findByEmail(email);
+        if(exisingUser.isPresent()){
+            User user = exisingUser.get();
+            user.setRole(Role.ADMIN);
+            userDao.update(user);
             return;
         }
         User user = new User(email,name,passwordUtil.generateHash(password),Role.ADMIN);
