@@ -29,7 +29,7 @@ public class EventManagementSystemConfiguration extends Configuration {
     private JWTConfig jwtConfig = new JWTConfig();
 
     @JsonProperty("jwt")
-    public JWTConfig geJwtConfig(){
+    public JWTConfig getJwtConfig(){
         return jwtConfig;
     }
 
@@ -42,7 +42,7 @@ public class EventManagementSystemConfiguration extends Configuration {
     private BootstrapAdminConfiguration bootstrapAdminConfiguration = new BootstrapAdminConfiguration();
 
     @JsonProperty("bootstrapadmin")
-    public BootstrapAdminConfiguration geBootstrapAdminConfiguration(){
+    public BootstrapAdminConfiguration getBootstrapAdminConfiguration(){
         return bootstrapAdminConfiguration;
     }
 

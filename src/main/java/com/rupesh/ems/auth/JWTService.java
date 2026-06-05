@@ -9,6 +9,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.rupesh.ems.core.Role;
+import com.rupesh.ems.exceptions.UnauthorizedException;
 
 public class JWTService {
 
@@ -16,9 +17,9 @@ public class JWTService {
     private final JWTVerifier verifier;
     private final Algorithm algorithm;
 
-    public JWTService(String secret,Long expireInMilliSec) {
-        this.expireInMilliSec = expireInMilliSec;
-        this.algorithm = Algorithm.HMAC256(secret);
+    public JWTService(JWTConfig jwtConfig) {
+        this.expireInMilliSec = jwtConfig.getExpireInMilliSec();
+        this.algorithm = Algorithm.HMAC256(jwtConfig.getSecret());
         this.verifier = com.auth0.jwt.JWT.require(algorithm)
         .withIssuer("ems").build();
     }
@@ -44,7 +45,7 @@ public class JWTService {
             DecodedJWT decodedJWT =  verifier.verify(jwt);
             return decodedJWT;
         }catch(JWTVerificationException e){
-            throw new RuntimeException("Invalid JWT token",e);
+            throw new UnauthorizedException("Invalid JWT token",e);
         }
     }
 
@@ -61,7 +62,10 @@ public class JWTService {
     }
 
     public Role getRole(DecodedJWT jwt) {
-        String roleStr = jwt.getClaim("role").asString();
-        return roleStr != null ? Role.valueOf(roleStr) : null;
+        try {
+            return Role.valueOf(jwt.getClaim("role").asString());
+        } catch (Exception e) {
+            throw new UnauthorizedException("Invalid role in token");
+        }
     }
 }
