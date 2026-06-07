@@ -1,6 +1,7 @@
 package com.rupesh.ems.core;
 
 public enum Role {
+    
     USER(0),
     MODERATOR(1),
     ADMIN(2);

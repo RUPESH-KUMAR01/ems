@@ -6,6 +6,7 @@ public class BootstrapAdminConfiguration {
     private String email;
     private String password;
     private boolean isEnabled;
+    private String phone;
 
     public BootstrapAdminConfiguration() {
     }
@@ -13,11 +14,13 @@ public class BootstrapAdminConfiguration {
     public BootstrapAdminConfiguration(String name,
                                        String email,
                                        String password,
-                                       boolean isEnabled) {
+                                       boolean isEnabled,
+                                    String phone) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.isEnabled = isEnabled;
+        this.phone =phone; 
     }
 
     public String getName() {
@@ -50,5 +53,12 @@ public class BootstrapAdminConfiguration {
 
     public void setEnabled(boolean enabled) {
         isEnabled = enabled;
+    }
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }

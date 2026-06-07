@@ -1,4 +1,4 @@
-package com.rupesh.ems.api.User.req;
+package com.rupesh.ems.api.auth.req;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -16,6 +16,9 @@ public class CreateUserRequest {
     @NotBlank
     @Size(min = 6)
     private String password;
+
+    @NotBlank
+    private String phone;
 
     public CreateUserRequest() {
     }
@@ -43,4 +46,13 @@ public class CreateUserRequest {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
 }

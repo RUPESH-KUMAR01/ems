@@ -8,27 +8,33 @@ import com.rupesh.ems.core.User;
 import com.rupesh.ems.db.UserDao;
 
 public class BootstrapAdminService {
-    private UserDao userDao;
+    private final UserDao userDao;
 
-    private final PasswordUtil passwordUtil;
 
-    public BootstrapAdminService(UserDao userDao,PasswordUtil passwordUtil){
+    public BootstrapAdminService(UserDao userDao){
         this.userDao=userDao;
-        this.passwordUtil = passwordUtil;
     }
 
-    public void ensureAdminExists(String name,String email,String password,boolean isEnabled){
+    public void ensureAdminExists(String name,String email,String password,boolean isEnabled,String phone){
         if(!isEnabled){
             return;
         }
-        Optional<User> exisingUser = userDao.findByEmail(email);
-        if(exisingUser.isPresent()){
-            User user = exisingUser.get();
+        Optional<User> existingUser = userDao.findByEmail(email);
+        if(existingUser.isPresent()){
+            User user = existingUser.get();
             user.setRole(Role.ADMIN);
             userDao.update(user);
+            user.setEmailVerified(true);
+            user.setPhoneVerified(true);
             return;
         }
-        User user = new User(email,name,passwordUtil.generateHash(password),Role.ADMIN);
+
+        User user = new User(email,name,PasswordUtil.generateHash(password),Role.ADMIN,phone);
+
+
+        user.setEmailVerified(true);
+        user.setPhoneVerified(true);
+
         userDao.create(user);
     }
 }

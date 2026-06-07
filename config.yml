@@ -28,6 +28,8 @@ jwt:
   expireInMilliSec: 3600000
 
 bootstrapadmin:
+  isEnabled: true
   name: "admin"
   email: "admin@ems.com"
+  phone: "123"
   password: "super-secret"

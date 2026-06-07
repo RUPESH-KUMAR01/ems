@@ -1,4 +1,4 @@
-package com.rupesh.ems.api.User.res;
+package com.rupesh.ems.api.auth.res;
 
 public class LoginResponse {
     private String token;

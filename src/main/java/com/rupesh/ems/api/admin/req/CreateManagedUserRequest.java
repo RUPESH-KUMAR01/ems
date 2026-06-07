@@ -23,6 +23,9 @@ public class CreateManagedUserRequest {
     @NotNull
     private Role role;
 
+    @NotBlank
+    private String phone;
+
     public CreateManagedUserRequest() {
     }
 
@@ -57,4 +60,13 @@ public class CreateManagedUserRequest {
     public void setRole(Role role) {
         this.role = role;
     }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
 }

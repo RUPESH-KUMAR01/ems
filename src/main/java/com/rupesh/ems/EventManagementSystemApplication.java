@@ -2,13 +2,15 @@ package com.rupesh.ems;
 
 import org.hibernate.SessionFactory;
 
-import com.rupesh.ems.Util.PasswordUtil;
 import com.rupesh.ems.auth.BootstrapAdminService;
 import com.rupesh.ems.auth.JWTService;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.resources.AdminResource;
-import com.rupesh.ems.resources.UserResource;
+import com.rupesh.ems.resources.AuthResource;
+import com.rupesh.ems.service.AdminService;
+import com.rupesh.ems.service.AuthService;
+
 
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
@@ -45,20 +47,21 @@ public class EventManagementSystemApplication extends Application<EventManagemen
         
         SessionFactory sessionFactory = hibernateBundle.getSessionFactory();
 
-        PasswordUtil passwordUtil = new PasswordUtil();
         JWTService jwtService = new JWTService(configuration.getJwtConfig());
 
         UserDao userDao = new UserDao(sessionFactory);
+        AuthService authService = new AuthService(userDao, jwtService);
+        AdminService adminService = new AdminService(userDao);
 
-        BootstrapAdminService bootstrapAdminService= new BootstrapAdminService(userDao,passwordUtil);
+        BootstrapAdminService bootstrapAdminService= new BootstrapAdminService(userDao);
         
         bootstrapAdminService.ensureAdminExists(configuration.getBootstrapAdminConfiguration().getName(),
     configuration.getBootstrapAdminConfiguration().getEmail(),configuration.getBootstrapAdminConfiguration().getPassword(),
-    configuration.getBootstrapAdminConfiguration().isEnabled());
+    configuration.getBootstrapAdminConfiguration().isEnabled(),configuration.getBootstrapAdminConfiguration().getPhone());
         
-        environment.jersey().register(new UserResource(userDao,jwtService));
-        environment.jersey().register(new AdminResource(userDao));
-    
+        environment.jersey().register(new AuthResource(authService));
+        environment.jersey().register(new AdminResource(adminService));
+        
     }
 
 }

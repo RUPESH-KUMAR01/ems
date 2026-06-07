@@ -32,6 +32,18 @@ public class UserDao extends AbstractDAO<User> {
                 .uniqueResultOptional();
     }
 
+    public Optional<User> findByPhone(String phone) {
+
+        return currentSession()
+                .createQuery(
+                        "FROM User WHERE phone = :phone",
+                        User.class
+                )
+                .setParameter("phone", phone)
+                .uniqueResultOptional();
+    }
+
+
     public List<User> findAll(){
         return currentSession().createQuery("FROM User",User.class).getResultList();
     }
@@ -40,8 +52,6 @@ public class UserDao extends AbstractDAO<User> {
         currentSession().merge(user);
         return user;
     }
-
-    
 
     public boolean delete(Long id){
         User user = get(id);

@@ -3,6 +3,7 @@ package com.rupesh.ems.auth;
 import java.security.Principal;
 
 import com.rupesh.ems.core.Role;
+import com.rupesh.ems.core.User;
 
 public class UserPrincipal implements Principal {
 
@@ -20,6 +21,13 @@ public class UserPrincipal implements Principal {
         this.email = email;
         this.name = name;
         this.role = role;
+    }
+
+    public UserPrincipal(User user){
+        this.id = user.getId();
+        this.email = user.getEmail();
+        this.name = user.getEmail();
+        this.role = user.getRole();
     }
 
     @Override

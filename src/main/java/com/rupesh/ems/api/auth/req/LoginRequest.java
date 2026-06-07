@@ -1,4 +1,4 @@
-package com.rupesh.ems.api.User.req;
+package com.rupesh.ems.api.auth.req;
 
 public class LoginRequest {
     private String email;

@@ -20,9 +20,14 @@ public class User {
     private String email;
 
     @NotBlank
+    @Column(name = "phone", unique = true, nullable = false)
+    private String phone;
+
+    @NotBlank
     @Column(name = "name",nullable = false)
     private String name;
 
+    
     @NotBlank
     @JsonIgnore
     @Column(name = "password_hash", nullable = false, length = 60)
@@ -32,11 +37,18 @@ public class User {
     @Column(name = "role",nullable = false)
     private Role role = Role.USER;
 
-    public User(String email,String name,String passwordHash,Role role){
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    @Column(name = "phone_verified", nullable = false)
+    private boolean phoneVerified = false;
+
+    public User(String email,String name,String passwordHash,Role role,String phone){
         this.email = email;
         this.name = name;
         this.passwordHash = passwordHash;
         this.role = role;
+        this.phone=phone;
     }
 
     public User(){}
@@ -76,5 +88,30 @@ public class User {
     public void setRole(Role role) {
         this.role = role;
     }
+    public String getPhone() {
+        return phone;
+    }
 
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public boolean isPhoneVerified() {
+        return phoneVerified;
+    }
+
+    public void setPhoneVerified(boolean phoneVerified) {
+        this.phoneVerified = phoneVerified;
+    }
+
+    public boolean isFullyVerified(){
+        return emailVerified && phoneVerified;
+    }
 }
