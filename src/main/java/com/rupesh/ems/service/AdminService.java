@@ -33,9 +33,11 @@ public class AdminService {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setName(request.getName());
-        user.setPasswordHash(PasswordUtil.generateHash(request.getPassword()));
+        user.setPasswordHash(PasswordUtil.hash(request.getPassword()));
         user.setRole(request.getRole());
         user.setPhone(request.getPhone());
+        user.setEmailVerified(true);
+        user.setPhoneVerified(true);
 
         return new UserResponse(userDao.create(user));
     }

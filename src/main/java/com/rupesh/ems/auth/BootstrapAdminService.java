@@ -29,7 +29,7 @@ public class BootstrapAdminService {
             return;
         }
 
-        User user = new User(email,name,PasswordUtil.generateHash(password),Role.ADMIN,phone);
+        User user = new User(email,name,PasswordUtil.hash(password),Role.ADMIN,phone);
 
 
         user.setEmailVerified(true);

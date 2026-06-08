@@ -10,7 +10,7 @@ import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
-
+import com.rupesh.ems.service.VerificationService;
 
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
@@ -48,9 +48,10 @@ public class EventManagementSystemApplication extends Application<EventManagemen
         SessionFactory sessionFactory = hibernateBundle.getSessionFactory();
 
         JWTService jwtService = new JWTService(configuration.getJwtConfig());
+        VerificationService verificationService = new VerificationService();
 
         UserDao userDao = new UserDao(sessionFactory);
-        AuthService authService = new AuthService(userDao, jwtService);
+        AuthService authService = new AuthService(userDao, jwtService, verificationService);
         AdminService adminService = new AdminService(userDao);
 
         BootstrapAdminService bootstrapAdminService= new BootstrapAdminService(userDao);

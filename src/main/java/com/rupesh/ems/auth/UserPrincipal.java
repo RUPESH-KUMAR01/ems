@@ -9,16 +9,19 @@ public class UserPrincipal implements Principal {
 
     private final Long id;
     private final String email;
+    private final String phone;
     private final String name;
     private final Role role;
 
     public UserPrincipal(Long id,
                          String email,
+                         String phone,
                          String name,
                          Role role) {
 
         this.id = id;
         this.email = email;
+        this.phone = phone;
         this.name = name;
         this.role = role;
     }
@@ -26,7 +29,8 @@ public class UserPrincipal implements Principal {
     public UserPrincipal(User user){
         this.id = user.getId();
         this.email = user.getEmail();
-        this.name = user.getEmail();
+        this.phone = user.getPhone();
+        this.name = user.getName();
         this.role = user.getRole();
     }
 
@@ -41,6 +45,10 @@ public class UserPrincipal implements Principal {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getPhone() {
+        return phone;
     }
 
     public Role getRole() {

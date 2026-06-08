@@ -18,3 +18,7 @@ target/
 
 # Logs
 *.log
+
+docs/
+
+.devlog.toml

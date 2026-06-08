@@ -17,10 +17,12 @@ import com.rupesh.ems.exceptions.UnauthorizedException;
 public class AuthService {
     private final UserDao userDao;
     private final JWTService jwtService;
+    private final VerificationService verificationService;
 
-    public AuthService(UserDao userDao, JWTService jwtService) {
+    public AuthService(UserDao userDao, JWTService jwtService,VerificationService verificationService) {
         this.userDao = userDao;
         this.jwtService = jwtService;
+        this.verificationService = verificationService;
     }
 
     public RegisterResponse register(CreateUserRequest req) {
@@ -35,7 +37,7 @@ public class AuthService {
         User user = new User();
         user.setEmail(req.getEmail());
         user.setName(req.getName());
-        user.setPasswordHash(PasswordUtil.generateHash(req.getPassword()));
+        user.setPasswordHash(PasswordUtil.hash(req.getPassword()));
         user.setPhone(req.getPhone());
 
         User savedUser = userDao.create(user);
@@ -48,7 +50,7 @@ public class AuthService {
         User user = userDao.findByEmail(req.getEmail())
                 .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
-        if (!PasswordUtil.compareHash(req.getPassword(), user.getPasswordHash())) {
+        if (!PasswordUtil.verify(req.getPassword(), user.getPasswordHash())) {
             throw new UnauthorizedException("Invalid email or password");
         }
 
@@ -61,4 +63,21 @@ public class AuthService {
                 .orElseThrow(() -> new NotFoundException("User not Found"));
         return new UserResponse(dbUser);
     }
+
+    public void verifyEmail(Long userId, String otp) {
+        verificationService.verifyEmail(userId, otp);
+    }
+
+    public void verifyPhone(Long userId, String otp) {
+        verificationService.verifyPhone(userId, otp);
+    }
+
+    public void generateEmailOtp(Long userId) {
+        verificationService.generateEmailOtp(userId);
+    }
+
+    public void generatePhoneOtp(Long userId) {
+        verificationService.generatePhoneOtp(userId);
+    }
+
 }

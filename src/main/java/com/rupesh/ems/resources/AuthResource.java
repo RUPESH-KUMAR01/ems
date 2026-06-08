@@ -1,7 +1,9 @@
 package com.rupesh.ems.resources;
 
 import com.rupesh.ems.api.auth.req.CreateUserRequest;
+import com.rupesh.ems.api.auth.req.EmailVerifyRequest;
 import com.rupesh.ems.api.auth.req.LoginRequest;
+import com.rupesh.ems.api.auth.req.PhoneVerifyRequest;
 import com.rupesh.ems.api.auth.res.LoginResponse;
 import com.rupesh.ems.api.auth.res.RegisterResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
@@ -13,6 +15,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 
 @Path("/api/auth")
 public class AuthResource {
@@ -35,8 +38,30 @@ public class AuthResource {
         return authService.login(req);
     }
 
+    @POST
+    @Path("/verify-email")
+    public void verifyEmail(@Auth UserPrincipal user, @Valid EmailVerifyRequest req){
+        authService.verifyEmail(user.getId(),req.getOtp());
+    }
     
-    
+    @POST
+    @Path("/verify-phone")
+    public void verifyPhone(@Auth UserPrincipal user, @Valid PhoneVerifyRequest req){
+        authService.verifyPhone(user.getId(),req.getOtp());
+    }
+
+    @POST
+    @Path("/generate-email-otp")
+    public void generateEmailOtp(@Auth UserPrincipal user){
+        authService.generateEmailOtp(user.getId());
+    }
+
+    @POST
+    @Path("/generate-phone-otp")
+    public void generatePhoneOtp(@Auth UserPrincipal user){
+        authService.generatePhoneOtp(user.getId());
+    }
+
     @GET
     @Path("/me")
     public UserResponse getUserInfo(@Auth UserPrincipal user){
