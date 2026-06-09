@@ -1,7 +1,5 @@
 package com.rupesh.ems.service;
 
-import java.util.List;
-
 import com.rupesh.ems.Util.PasswordUtil;
 import com.rupesh.ems.api.admin.req.ChangeUserRoleRequest;
 import com.rupesh.ems.api.admin.req.CreateManagedUserRequest;
@@ -13,84 +11,86 @@ import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
+import java.util.List;
 
 public class AdminService {
-    private final UserDao userDao;
+  private final UserDao userDao;
 
-    public AdminService(UserDao userDao) {
-        this.userDao = userDao;
+  public AdminService(UserDao userDao) {
+    this.userDao = userDao;
+  }
+
+  public UserResponse createUser(CreateManagedUserRequest request) {
+    if (userDao.findByEmail(request.getEmail()).isPresent()) {
+      throw new ConflictException("User already exists");
     }
 
-    public UserResponse createUser(CreateManagedUserRequest request) {
-        if (userDao.findByEmail(request.getEmail()).isPresent()) {
-            throw new ConflictException("User already exists");
-        }
-
-        if (userDao.findByPhone(request.getPhone()).isPresent()) {
-            throw new ConflictException("Phone number already in use");
-        }
-
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setName(request.getName());
-        user.setPasswordHash(PasswordUtil.hash(request.getPassword()));
-        user.setRole(request.getRole());
-        user.setPhone(request.getPhone());
-        user.setEmailVerified(true);
-        user.setPhoneVerified(true);
-
-        return new UserResponse(userDao.create(user));
+    if (userDao.findByPhone(request.getPhone()).isPresent()) {
+      throw new ConflictException("Phone number already in use");
     }
 
-    public UserResponse getUserById(Long userId) {
-        User user = userDao.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+    User user = new User();
+    user.setEmail(request.getEmail());
+    user.setName(request.getName());
+    user.setPasswordHash(PasswordUtil.hash(request.getPassword()));
+    user.setRole(request.getRole());
+    user.setPhone(request.getPhone());
+    user.setEmailVerified(true);
+    user.setPhoneVerified(true);
 
-        return new UserResponse(user);
+    return new UserResponse(userDao.create(user));
+  }
+
+  public UserResponse getUserById(Long userId) {
+    User user =
+        userDao.getUserById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+    return new UserResponse(user);
+  }
+
+  public UserResponse getUserByEmail(String email) {
+    User user =
+        userDao.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
+
+    return new UserResponse(user);
+  }
+
+  public UserResponse getUserByPhone(String phone) {
+    User user =
+        userDao.findByPhone(phone).orElseThrow(() -> new NotFoundException("User not found"));
+
+    return new UserResponse(user);
+  }
+
+  public List<UserResponse> getAllUsers() {
+    return userDao.findAll().stream().map(UserResponse::new).toList();
+  }
+
+  public UserResponse changeUserRole(
+      Long userId, ChangeUserRoleRequest request, UserPrincipal admin) {
+    User user =
+        userDao.getUserById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+    if (admin.getId().equals(userId) && request.getRole() != user.getRole()) {
+      throw new BadRequestException("Admin cannot change own role");
     }
 
-    public UserResponse getUserByEmail(String email) {
-        User user = userDao.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+    user.setRole(request.getRole());
+    userDao.update(user);
 
-        return new UserResponse(user);
+    return new UserResponse(user);
+  }
+
+  public AdminMessageResponse deleteUser(Long userId, UserPrincipal admin) {
+    if (admin.getId().equals(userId)) {
+      throw new BadRequestException("Admin cannot delete own account");
     }
 
-    public UserResponse getUserByPhone(String phone) {
-        User user = userDao.findByPhone(phone)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-
-        return new UserResponse(user);
+    boolean deleted = userDao.delete(userId);
+    if (!deleted) {
+      throw new NotFoundException("User not found");
     }
 
-    public List<UserResponse> getAllUsers() {
-        return userDao.findAll().stream().map(UserResponse::new).toList();
-    }
-
-    public UserResponse changeUserRole(Long userId, ChangeUserRoleRequest request, UserPrincipal admin) {
-        User user = userDao.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-
-        if (admin.getId().equals(userId) && request.getRole() != user.getRole()) {
-            throw new BadRequestException("Admin cannot change own role");
-        }
-
-        user.setRole(request.getRole());
-        userDao.update(user);
-
-        return new UserResponse(user);
-    }
-
-    public AdminMessageResponse deleteUser(Long userId, UserPrincipal admin) {
-        if (admin.getId().equals(userId)) {
-            throw new BadRequestException("Admin cannot delete own account");
-        }
-
-        boolean deleted = userDao.delete(userId);
-        if (!deleted) {
-            throw new NotFoundException("User not found");
-        }
-
-        return new AdminMessageResponse("User deleted successfully");
-    }
+    return new AdminMessageResponse("User deleted successfully");
+  }
 }
