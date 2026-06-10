@@ -33,3 +33,7 @@ bootstrapadmin:
   email: "admin@ems.com"
   phone: "123"
   password: "super-secret"
+
+emailservice:
+  username: "admin@ems.com"
+  password: "ems123@"

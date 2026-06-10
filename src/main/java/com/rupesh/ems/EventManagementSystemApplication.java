@@ -57,7 +57,7 @@ public class EventManagementSystemApplication
     VerificationDao verificationDao = new VerificationDao(sessionFactory);
 
     JWTService jwtService = new JWTService(configuration.getJwtConfig());
-    EmailService emailService = new SMTPEmailService("", "");
+    EmailService emailService = new SMTPEmailService(configuration.getEmailServiceConfiguration());
     SmsService smsService = new ConsoleSmsService();
     VerificationService verificationService =
         new VerificationService(verificationDao, userDao, emailService, smsService);
@@ -66,12 +66,7 @@ public class EventManagementSystemApplication
 
     BootstrapAdminService bootstrapAdminService = new BootstrapAdminService(userDao);
 
-    bootstrapAdminService.ensureAdminExists(
-        configuration.getBootstrapAdminConfiguration().getName(),
-        configuration.getBootstrapAdminConfiguration().getEmail(),
-        configuration.getBootstrapAdminConfiguration().getPassword(),
-        configuration.getBootstrapAdminConfiguration().isEnabled(),
-        configuration.getBootstrapAdminConfiguration().getPhone());
+    bootstrapAdminService.ensureAdminExists(configuration.getBootstrapAdminConfiguration());
 
     environment.jersey().register(new AuthResource(authService));
     environment.jersey().register(new AdminResource(adminService));

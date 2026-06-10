@@ -1,4 +1,4 @@
-package com.rupesh.ems.auth;
+package com.rupesh.ems.configs;
 
 public class BootstrapAdminConfiguration {
 

@@ -9,15 +9,16 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 
+import com.rupesh.ems.configs.EmailServiceConfiguration;
+
 public class SMTPEmailService implements EmailService {
 
   private final String username;
   private final String password;
 
-  public SMTPEmailService(String username, String password) {
-
-    this.username = username;
-    this.password = password;
+  public SMTPEmailService(EmailServiceConfiguration config) {
+    this.username = config.getUsername();
+    this.password = config.getPassword();
   }
 
   @Override

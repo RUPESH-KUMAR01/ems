@@ -1,4 +1,4 @@
-package com.rupesh.ems.auth;
+package com.rupesh.ems.configs;
 
 import jakarta.validation.constraints.NotBlank;
 

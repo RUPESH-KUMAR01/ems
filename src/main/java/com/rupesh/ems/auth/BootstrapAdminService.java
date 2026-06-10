@@ -1,6 +1,7 @@
 package com.rupesh.ems.auth;
 
 import com.rupesh.ems.Util.PasswordUtil;
+import com.rupesh.ems.configs.BootstrapAdminConfiguration;
 import com.rupesh.ems.core.Role;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.db.UserDao;
@@ -14,7 +15,12 @@ public class BootstrapAdminService {
   }
 
   public void ensureAdminExists(
-      String name, String email, String password, boolean isEnabled, String phone) {
+      BootstrapAdminConfiguration bootstrapAdminConfiguration) {
+    String name = bootstrapAdminConfiguration.getName();
+    String email = bootstrapAdminConfiguration.getEmail();
+    String password = bootstrapAdminConfiguration.getPassword();
+    boolean isEnabled = bootstrapAdminConfiguration.isEnabled();
+    String phone = bootstrapAdminConfiguration.getPhone();
     if (!isEnabled) {
       return;
     }
