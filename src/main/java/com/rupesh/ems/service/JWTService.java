@@ -1,4 +1,4 @@
-package com.rupesh.ems.auth;
+package com.rupesh.ems.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator.Builder;
@@ -6,6 +6,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.configs.JWTConfig;
 import com.rupesh.ems.core.Role;
 import com.rupesh.ems.exceptions.UnauthorizedException;
@@ -20,7 +21,7 @@ public class JWTService {
   public JWTService(JWTConfig jwtConfig) {
     this.expireInMilliSec = jwtConfig.getExpireInMilliSec();
     this.algorithm = Algorithm.HMAC256(jwtConfig.getSecret());
-    this.verifier = com.auth0.jwt.JWT.require(algorithm).withIssuer("ems").build();
+    this.verifier = JWT.require(algorithm).withIssuer("ems").build();
   }
 
   public String generateJWT(UserPrincipal user) {

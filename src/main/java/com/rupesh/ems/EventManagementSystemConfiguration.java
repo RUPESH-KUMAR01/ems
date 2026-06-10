@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rupesh.ems.configs.BootstrapAdminConfiguration;
 import com.rupesh.ems.configs.EmailServiceConfiguration;
 import com.rupesh.ems.configs.JWTConfig;
-
 import io.dropwizard.core.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import jakarta.validation.Valid;
@@ -50,7 +49,8 @@ public class EventManagementSystemConfiguration extends Configuration {
     bootstrapAdminConfiguration = configuration;
   }
 
-  @Valid private EmailServiceConfiguration emailServiceConfiguration = new EmailServiceConfiguration();
+  @Valid
+  private EmailServiceConfiguration emailServiceConfiguration = new EmailServiceConfiguration();
 
   @JsonProperty("emailservice")
   public EmailServiceConfiguration getEmailServiceConfiguration() {

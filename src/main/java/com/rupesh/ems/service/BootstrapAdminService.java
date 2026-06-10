@@ -1,4 +1,4 @@
-package com.rupesh.ems.auth;
+package com.rupesh.ems.service;
 
 import com.rupesh.ems.Util.PasswordUtil;
 import com.rupesh.ems.configs.BootstrapAdminConfiguration;
@@ -14,8 +14,7 @@ public class BootstrapAdminService {
     this.userDao = userDao;
   }
 
-  public void ensureAdminExists(
-      BootstrapAdminConfiguration bootstrapAdminConfiguration) {
+  public void ensureAdminExists(BootstrapAdminConfiguration bootstrapAdminConfiguration) {
     String name = bootstrapAdminConfiguration.getName();
     String email = bootstrapAdminConfiguration.getEmail();
     String password = bootstrapAdminConfiguration.getPassword();

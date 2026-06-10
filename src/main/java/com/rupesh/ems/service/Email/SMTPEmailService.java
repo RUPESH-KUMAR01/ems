@@ -1,5 +1,6 @@
 package com.rupesh.ems.service.Email;
 
+import com.rupesh.ems.configs.EmailServiceConfiguration;
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
@@ -8,8 +9,6 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
-
-import com.rupesh.ems.configs.EmailServiceConfiguration;
 
 public class SMTPEmailService implements EmailService {
 

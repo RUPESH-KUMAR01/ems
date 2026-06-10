@@ -1,7 +1,5 @@
 package com.rupesh.ems;
 
-import com.rupesh.ems.auth.BootstrapAdminService;
-import com.rupesh.ems.auth.JWTService;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.core.VerificationCode;
 import com.rupesh.ems.db.UserDao;
@@ -10,8 +8,10 @@ import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
+import com.rupesh.ems.service.BootstrapAdminService;
 import com.rupesh.ems.service.Email.EmailService;
 import com.rupesh.ems.service.Email.SMTPEmailService;
+import com.rupesh.ems.service.JWTService;
 import com.rupesh.ems.service.Sms.ConsoleSmsService;
 import com.rupesh.ems.service.Sms.SmsService;
 import com.rupesh.ems.service.VerificationService;

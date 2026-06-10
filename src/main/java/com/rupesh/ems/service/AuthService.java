@@ -6,7 +6,6 @@ import com.rupesh.ems.api.auth.req.LoginRequest;
 import com.rupesh.ems.api.auth.res.LoginResponse;
 import com.rupesh.ems.api.auth.res.RegisterResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
-import com.rupesh.ems.auth.JWTService;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.db.UserDao;

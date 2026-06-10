@@ -3,6 +3,7 @@ package com.rupesh.ems.auth;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.db.UserDao;
+import com.rupesh.ems.service.JWTService;
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import java.util.Optional;
