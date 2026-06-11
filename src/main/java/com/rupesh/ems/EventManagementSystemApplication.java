@@ -1,5 +1,8 @@
 package com.rupesh.ems;
 
+import com.rupesh.ems.auth.JWTAuthenticator;
+import com.rupesh.ems.auth.RoleAuthorizer;
+import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.core.VerificationCode;
 import com.rupesh.ems.db.UserDao;
@@ -15,11 +18,18 @@ import com.rupesh.ems.service.JWTService;
 import com.rupesh.ems.service.Sms.ConsoleSmsService;
 import com.rupesh.ems.service.Sms.SmsService;
 import com.rupesh.ems.service.VerificationService;
+
+import io.dropwizard.auth.AuthDynamicFeature;
+import io.dropwizard.auth.AuthValueFactoryProvider;
+import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
+
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.hibernate.SessionFactory;
 
 public class EventManagementSystemApplication
@@ -55,6 +65,19 @@ public class EventManagementSystemApplication
     SessionFactory sessionFactory = hibernateBundle.getSessionFactory();
     UserDao userDao = new UserDao(sessionFactory);
     VerificationDao verificationDao = new VerificationDao(sessionFactory);
+    UnitOfWorkAwareProxyFactory proxyFactory =
+        new UnitOfWorkAwareProxyFactory(hibernateBundle);
+
+        
+    BootstrapAdminService bootstrapAdminService =
+        proxyFactory.create(
+            BootstrapAdminService.class,
+            UserDao.class,
+            userDao
+        );
+
+
+    bootstrapAdminService.ensureAdminExists(configuration.getBootstrapAdminConfiguration());
 
     JWTService jwtService = new JWTService(configuration.getJwtConfig());
     EmailService emailService = new SMTPEmailService(configuration.getEmailServiceConfiguration());
@@ -63,11 +86,31 @@ public class EventManagementSystemApplication
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService, verificationService);
     AdminService adminService = new AdminService(userDao);
+    
+    JWTAuthenticator authenticator =
+        proxyFactory.create(
+            JWTAuthenticator.class,
+            new Class<?>[] {
+                JWTService.class,
+                UserDao.class
+            },
+            new Object[] {
+                jwtService,
+                userDao
+            }
+        );
+    RoleAuthorizer authorizer = new RoleAuthorizer();
+    
+    environment.jersey().register(new AuthDynamicFeature(
+        new OAuthCredentialAuthFilter.Builder<UserPrincipal>()
+            .setAuthenticator(authenticator)
+            .setAuthorizer(authorizer)
+            .setPrefix("Bearer")
+            .buildAuthFilter()
+    ));
 
-    BootstrapAdminService bootstrapAdminService = new BootstrapAdminService(userDao);
-
-    bootstrapAdminService.ensureAdminExists(configuration.getBootstrapAdminConfiguration());
-
+    environment.jersey().register(new AuthValueFactoryProvider.Binder<>(UserPrincipal.class));
+    environment.jersey().register(RolesAllowedDynamicFeature.class);
     environment.jersey().register(new AuthResource(authService));
     environment.jersey().register(new AdminResource(adminService));
   }

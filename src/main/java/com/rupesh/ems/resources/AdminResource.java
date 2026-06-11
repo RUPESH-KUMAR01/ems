@@ -2,11 +2,13 @@ package com.rupesh.ems.resources;
 
 import com.rupesh.ems.api.admin.req.ChangeUserRoleRequest;
 import com.rupesh.ems.api.admin.req.CreateManagedUserRequest;
+import com.rupesh.ems.api.admin.req.UpdateUserRequest;
 import com.rupesh.ems.api.admin.res.AdminMessageResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.service.AdminService;
 import io.dropwizard.auth.Auth;
+import io.dropwizard.hibernate.UnitOfWork;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.DELETE;
@@ -28,36 +30,52 @@ public class AdminResource {
   }
 
   @POST
+  @UnitOfWork
   @Path("/users")
   public UserResponse createUser(@Valid CreateManagedUserRequest request) {
     return adminService.createUser(request);
   }
-
+  
+  @PUT
+  @Path("/users/{id}")
+  @UnitOfWork
+  public UserResponse updateUser(
+      @PathParam("id") Long userId,
+      @Valid UpdateUserRequest request,
+      @Auth UserPrincipal admin
+  ) {
+      return adminService.updateUser(userId, request, admin);
+  }
   @GET
+  @UnitOfWork
   @Path("/users/{id}")
   public UserResponse getUserById(@PathParam("id") Long userId) {
     return adminService.getUserById(userId);
   }
 
   @GET
-  @Path("/users/search")
+  @UnitOfWork
+  @Path("/users/search/email")
   public UserResponse getUserByEmail(@QueryParam("email") String email) {
     return adminService.getUserByEmail(email);
   }
 
   @GET
-  @Path("/users/search")
+  @UnitOfWork
+  @Path("/users/search/phone")
   public UserResponse getUserByPhone(@QueryParam("phone") String phone) {
     return adminService.getUserByPhone(phone);
   }
 
   @GET
+  @UnitOfWork
   @Path("/users")
   public List<UserResponse> getAllUsers() {
     return adminService.getAllUsers();
   }
 
   @PUT
+  @UnitOfWork
   @Path("/users/{id}/role")
   public UserResponse changeUserRole(
       @PathParam("id") Long userId,
@@ -67,6 +85,7 @@ public class AdminResource {
   }
 
   @DELETE
+  @UnitOfWork
   @Path("/users/{id}")
   public AdminMessageResponse deleteUser(@PathParam("id") Long userId, @Auth UserPrincipal admin) {
     return adminService.deleteUser(userId, admin);

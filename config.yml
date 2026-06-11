@@ -28,7 +28,7 @@ jwt:
   expireInMilliSec: 3600000
 
 bootstrapadmin:
-  isEnabled: true
+  enabled: true
   name: "admin"
   email: "admin@ems.com"
   phone: "123"

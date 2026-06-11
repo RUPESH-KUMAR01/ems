@@ -5,6 +5,9 @@ import com.rupesh.ems.configs.BootstrapAdminConfiguration;
 import com.rupesh.ems.core.Role;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.db.UserDao;
+
+import io.dropwizard.hibernate.UnitOfWork;
+
 import java.util.Optional;
 
 public class BootstrapAdminService {
@@ -14,6 +17,7 @@ public class BootstrapAdminService {
     this.userDao = userDao;
   }
 
+  @UnitOfWork
   public void ensureAdminExists(BootstrapAdminConfiguration bootstrapAdminConfiguration) {
     String name = bootstrapAdminConfiguration.getName();
     String email = bootstrapAdminConfiguration.getEmail();

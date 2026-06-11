@@ -6,6 +6,8 @@ import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.service.JWTService;
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
+import io.dropwizard.hibernate.UnitOfWork;
+
 import java.util.Optional;
 
 public class JWTAuthenticator implements Authenticator<String, UserPrincipal> {
@@ -18,12 +20,13 @@ public class JWTAuthenticator implements Authenticator<String, UserPrincipal> {
   }
 
   @Override
+  @UnitOfWork
   public Optional<UserPrincipal> authenticate(String token) throws AuthenticationException {
     try {
       DecodedJWT decodedJWT = jwtService.verifyJwt(token);
       User dbuser =
           userDao
-              .getUserById(decodedJWT.getClaim("userId").asLong())
+              .getUserById(decodedJWT.getClaim("id").asLong())
               .orElseThrow(() -> new AuthenticationException("User not found"));
       UserPrincipal user = new UserPrincipal(dbuser);
       return Optional.of(user);

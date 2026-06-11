@@ -14,7 +14,7 @@ import java.util.Date;
 
 public class JWTService {
 
-  private volatile Long expireInMilliSec;
+  private final Long expireInMilliSec;
   private final JWTVerifier verifier;
   private final Algorithm algorithm;
 

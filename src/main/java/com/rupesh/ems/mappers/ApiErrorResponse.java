@@ -22,7 +22,7 @@ public class ApiErrorResponse {
     this.code = code;
     this.message = message;
     this.path = path;
-    this.details = details;
+    this.details = details==null ? null : List.copyOf(details);
   }
 
   public String getTimestamp() {

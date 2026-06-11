@@ -1,11 +1,14 @@
 package com.rupesh.ems.configs;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public class JWTConfig {
 
   @NotBlank private String secret;
 
+  @Positive
   private Long expireInMilliSec;
 
   public JWTConfig() {}

@@ -17,8 +17,8 @@ import java.time.temporal.ChronoUnit;
 
 public class VerificationService {
 
-  private final int OTP_LENGTH = 6;
-  private final int OTP_EXPIRY_MINUTES = 10;
+  private static final int OTP_LENGTH = 6;
+  private static final int OTP_EXPIRY_MINUTES = 10;
   private final VerificationDao verificationDao;
   private final UserDao userDao;
   private final EmailService emailService;

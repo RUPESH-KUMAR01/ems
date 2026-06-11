@@ -23,7 +23,7 @@ public class EventManagementSystemConfiguration extends Configuration {
     this.database = database;
   }
 
-  @Valid private JWTConfig jwtConfig = new JWTConfig();
+  @Valid @NotNull private JWTConfig jwtConfig = new JWTConfig();
 
   @JsonProperty("jwt")
   public JWTConfig getJwtConfig() {
