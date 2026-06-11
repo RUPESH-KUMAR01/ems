@@ -1,5 +1,7 @@
 package com.rupesh.ems.core;
 
+import java.time.Instant;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -39,6 +41,12 @@ public class User {
 
   @Column(name = "phone_verified", nullable = false)
   private boolean phoneVerified = false;
+
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
+
+  @Column(name = "updated_at", nullable = false)
+  private Instant updatedAt;
 
   public User(String email, String name, String passwordHash, Role role, String phone) {
     this.email = email;
