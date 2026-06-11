@@ -94,41 +94,37 @@ public class AdminService {
 
     return new AdminMessageResponse("User deleted successfully");
   }
-  public UserResponse updateUser(
-      Long userId,
-      UpdateUserRequest request,
-      UserPrincipal admin
-  ) {
-      User user =
-          userDao.getUserById(userId)
-              .orElseThrow(() -> new NotFoundException("User not found"));
 
-      if (request.getName() != null) {
-          user.setName(request.getName());
-      }
+  public UserResponse updateUser(Long userId, UpdateUserRequest request, UserPrincipal admin) {
+    User user =
+        userDao.getUserById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
-      if (request.getEmail() != null) {
-          user.setEmail(request.getEmail());
-      }
+    if (request.getName() != null) {
+      user.setName(request.getName());
+    }
 
-      if (request.getPhone() != null) {
-          user.setPhone(request.getPhone());
-      }
+    if (request.getEmail() != null) {
+      user.setEmail(request.getEmail());
+    }
 
-      if (request.getRole() != null) {
-          user.setRole(request.getRole());
-      }
+    if (request.getPhone() != null) {
+      user.setPhone(request.getPhone());
+    }
 
-      if (request.getEmailVerified() != null) {
-          user.setEmailVerified(request.getEmailVerified());
-      }
+    if (request.getRole() != null) {
+      user.setRole(request.getRole());
+    }
 
-      if (request.getPhoneVerified() != null) {
-          user.setPhoneVerified(request.getPhoneVerified());
-      }
+    if (request.getEmailVerified() != null) {
+      user.setEmailVerified(request.getEmailVerified());
+    }
 
-      userDao.update(user);
+    if (request.getPhoneVerified() != null) {
+      user.setPhoneVerified(request.getPhoneVerified());
+    }
 
-      return new UserResponse(user);
+    userDao.update(user);
+
+    return new UserResponse(user);
   }
 }

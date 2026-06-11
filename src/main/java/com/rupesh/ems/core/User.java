@@ -1,11 +1,10 @@
 package com.rupesh.ems.core;
 
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import java.time.Instant;
 
 @Entity
 @Table(name = "users")

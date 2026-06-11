@@ -18,7 +18,6 @@ import com.rupesh.ems.service.JWTService;
 import com.rupesh.ems.service.Sms.ConsoleSmsService;
 import com.rupesh.ems.service.Sms.SmsService;
 import com.rupesh.ems.service.VerificationService;
-
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
@@ -28,7 +27,6 @@ import io.dropwizard.core.setup.Environment;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
-
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.hibernate.SessionFactory;
 
@@ -65,17 +63,10 @@ public class EventManagementSystemApplication
     SessionFactory sessionFactory = hibernateBundle.getSessionFactory();
     UserDao userDao = new UserDao(sessionFactory);
     VerificationDao verificationDao = new VerificationDao(sessionFactory);
-    UnitOfWorkAwareProxyFactory proxyFactory =
-        new UnitOfWorkAwareProxyFactory(hibernateBundle);
+    UnitOfWorkAwareProxyFactory proxyFactory = new UnitOfWorkAwareProxyFactory(hibernateBundle);
 
-        
     BootstrapAdminService bootstrapAdminService =
-        proxyFactory.create(
-            BootstrapAdminService.class,
-            UserDao.class,
-            userDao
-        );
-
+        proxyFactory.create(BootstrapAdminService.class, UserDao.class, userDao);
 
     bootstrapAdminService.ensureAdminExists(configuration.getBootstrapAdminConfiguration());
 
@@ -86,28 +77,23 @@ public class EventManagementSystemApplication
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService, verificationService);
     AdminService adminService = new AdminService(userDao);
-    
+
     JWTAuthenticator authenticator =
         proxyFactory.create(
             JWTAuthenticator.class,
-            new Class<?>[] {
-                JWTService.class,
-                UserDao.class
-            },
-            new Object[] {
-                jwtService,
-                userDao
-            }
-        );
+            new Class<?>[] {JWTService.class, UserDao.class},
+            new Object[] {jwtService, userDao});
     RoleAuthorizer authorizer = new RoleAuthorizer();
-    
-    environment.jersey().register(new AuthDynamicFeature(
-        new OAuthCredentialAuthFilter.Builder<UserPrincipal>()
-            .setAuthenticator(authenticator)
-            .setAuthorizer(authorizer)
-            .setPrefix("Bearer")
-            .buildAuthFilter()
-    ));
+
+    environment
+        .jersey()
+        .register(
+            new AuthDynamicFeature(
+                new OAuthCredentialAuthFilter.Builder<UserPrincipal>()
+                    .setAuthenticator(authenticator)
+                    .setAuthorizer(authorizer)
+                    .setPrefix("Bearer")
+                    .buildAuthFilter()));
 
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(UserPrincipal.class));
     environment.jersey().register(RolesAllowedDynamicFeature.class);

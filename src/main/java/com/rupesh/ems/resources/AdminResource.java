@@ -35,17 +35,15 @@ public class AdminResource {
   public UserResponse createUser(@Valid CreateManagedUserRequest request) {
     return adminService.createUser(request);
   }
-  
+
   @PUT
   @Path("/users/{id}")
   @UnitOfWork
   public UserResponse updateUser(
-      @PathParam("id") Long userId,
-      @Valid UpdateUserRequest request,
-      @Auth UserPrincipal admin
-  ) {
-      return adminService.updateUser(userId, request, admin);
+      @PathParam("id") Long userId, @Valid UpdateUserRequest request, @Auth UserPrincipal admin) {
+    return adminService.updateUser(userId, request, admin);
   }
+
   @GET
   @UnitOfWork
   @Path("/users/{id}")

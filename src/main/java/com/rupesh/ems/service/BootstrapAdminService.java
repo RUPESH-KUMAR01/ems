@@ -5,9 +5,7 @@ import com.rupesh.ems.configs.BootstrapAdminConfiguration;
 import com.rupesh.ems.core.Role;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.db.UserDao;
-
 import io.dropwizard.hibernate.UnitOfWork;
-
 import java.util.Optional;
 
 public class BootstrapAdminService {

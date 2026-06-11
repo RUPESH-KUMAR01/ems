@@ -7,7 +7,6 @@ import com.rupesh.ems.service.JWTService;
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.hibernate.UnitOfWork;
-
 import java.util.Optional;
 
 public class JWTAuthenticator implements Authenticator<String, UserPrincipal> {
