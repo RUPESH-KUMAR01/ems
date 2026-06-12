@@ -39,8 +39,7 @@ public class TeamDao extends AbstractDAO<Team> {
         .uniqueResultOptional();
   }
 
-  public boolean delete(Long id) {
-    Team team = get(id);
+  public boolean delete(Team team) {
     if (team != null) {
       currentSession().remove(team);
       return true;
