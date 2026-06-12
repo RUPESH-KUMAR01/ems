@@ -7,6 +7,7 @@ import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.core.Team;
 import com.rupesh.ems.db.TeamDao;
 import com.rupesh.ems.exceptions.ConflictException;
+import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.util.List;
 
@@ -24,8 +25,14 @@ public class TeamService {
         .filter(team -> team.getOwnerId().equals(user.getId()))
         .orElseThrow(() -> new NotFoundException("Team not found"));
   }
-
+  private void ensureVerified(UserPrincipal user) {
+      if (!user.isFullyVerified()) {
+          throw new ForbiddenException(
+              "Email and phone verification required");
+      }
+  }
   public TeamResponse createTeam(CreateTeamRequest request, UserPrincipal user) {
+    ensureVerified(user);
 
     teamDao
         .findByOwnerIdAndName(user.getId(), request.getName())
@@ -42,6 +49,7 @@ public class TeamService {
   }
 
   public TeamResponse updateTeam(Long teamId, UpdateTeamRequest request, UserPrincipal user) {
+    ensureVerified(user);
 
     Team team = getOwnedTeam(teamId, user);
 
@@ -71,6 +79,7 @@ public class TeamService {
   }
 
   public void deleteTeam(Long teamId, UserPrincipal user) {
+    ensureVerified(user);
 
     Team team = getOwnedTeam(teamId, user);
 

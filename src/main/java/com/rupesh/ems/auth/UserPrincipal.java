@@ -11,14 +11,17 @@ public class UserPrincipal implements Principal {
   private final String phone;
   private final String name;
   private final Role role;
+  private final boolean emailVerified;
+  private final boolean phoneVerified;
 
-  public UserPrincipal(Long id, String email, String phone, String name, Role role) {
-
+  public UserPrincipal(Long id, String email, String phone, String name, Role role, boolean emailVerified, boolean phoneVerified) {
     this.id = id;
     this.email = email;
     this.phone = phone;
     this.name = name;
     this.role = role;
+    this.emailVerified = emailVerified;
+    this.phoneVerified = phoneVerified;
   }
 
   public UserPrincipal(User user) {
@@ -27,6 +30,8 @@ public class UserPrincipal implements Principal {
     this.phone = user.getPhone();
     this.name = user.getName();
     this.role = user.getRole();
+    this.emailVerified = user.isEmailVerified();
+    this.phoneVerified = user.isPhoneVerified();
   }
 
   @Override
@@ -48,6 +53,17 @@ public class UserPrincipal implements Principal {
 
   public Role getRole() {
     return role;
+  }
+
+  public boolean isEmailVerified() {
+    return emailVerified;
+  }
+  public boolean isPhoneVerified() {
+    return phoneVerified;
+  }
+
+  public boolean isFullyVerified() {
+    return emailVerified && phoneVerified;
   }
 
   public boolean hasPermission(Role requiredRole) {
