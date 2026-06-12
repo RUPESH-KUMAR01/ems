@@ -3,18 +3,22 @@ package com.rupesh.ems;
 import com.rupesh.ems.auth.JWTAuthenticator;
 import com.rupesh.ems.auth.RoleAuthorizer;
 import com.rupesh.ems.auth.UserPrincipal;
+import com.rupesh.ems.core.Team;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.core.VerificationCode;
+import com.rupesh.ems.db.TeamDao;
 import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.db.VerificationDao;
 import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
+import com.rupesh.ems.resources.TeamResource;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
 import com.rupesh.ems.service.BootstrapAdminService;
 import com.rupesh.ems.service.Email.EmailService;
 import com.rupesh.ems.service.Email.SMTPEmailService;
 import com.rupesh.ems.service.JWTService;
+import com.rupesh.ems.service.TeamService;
 import com.rupesh.ems.service.Sms.ConsoleSmsService;
 import com.rupesh.ems.service.Sms.SmsService;
 import com.rupesh.ems.service.VerificationService;
@@ -34,7 +38,8 @@ public class EventManagementSystemApplication
     extends Application<EventManagementSystemConfiguration> {
 
   private final HibernateBundle<EventManagementSystemConfiguration> hibernateBundle =
-      new HibernateBundle<EventManagementSystemConfiguration>(User.class, VerificationCode.class) {
+      new HibernateBundle<EventManagementSystemConfiguration>(
+          User.class, VerificationCode.class, Team.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(
             EventManagementSystemConfiguration configuration) {
@@ -63,6 +68,7 @@ public class EventManagementSystemApplication
     SessionFactory sessionFactory = hibernateBundle.getSessionFactory();
     UserDao userDao = new UserDao(sessionFactory);
     VerificationDao verificationDao = new VerificationDao(sessionFactory);
+    TeamDao teamDao = new TeamDao(sessionFactory);
     UnitOfWorkAwareProxyFactory proxyFactory = new UnitOfWorkAwareProxyFactory(hibernateBundle);
 
     BootstrapAdminService bootstrapAdminService =
@@ -77,6 +83,7 @@ public class EventManagementSystemApplication
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService, verificationService);
     AdminService adminService = new AdminService(userDao);
+    TeamService teamService = new TeamService(teamDao);
 
     JWTAuthenticator authenticator =
         proxyFactory.create(
@@ -99,5 +106,6 @@ public class EventManagementSystemApplication
     environment.jersey().register(RolesAllowedDynamicFeature.class);
     environment.jersey().register(new AuthResource(authService));
     environment.jersey().register(new AdminResource(adminService));
+    environment.jersey().register(new TeamResource(teamService));
   }
 }

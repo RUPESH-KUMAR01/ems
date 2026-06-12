@@ -120,4 +120,16 @@ public class User {
   public boolean isFullyVerified() {
     return emailVerified && phoneVerified;
   }
+
+  @PrePersist
+  public void prePersist() {
+    Instant now = Instant.now();
+    createdAt = now;
+    updatedAt = now;
+  }
+
+  @PreUpdate
+  public void preUpdate() {
+    updatedAt = Instant.now();
+  }
 }
