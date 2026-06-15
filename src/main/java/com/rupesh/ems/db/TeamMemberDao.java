@@ -30,6 +30,13 @@ public class TeamMemberDao extends AbstractDAO<TeamMember> {
         .getResultList();
   }
 
+  public Long countByTeamId(Long teamId) {
+    return currentSession()
+        .createQuery("SELECT COUNT(tm) FROM TeamMember tm WHERE tm.teamId = :teamId", Long.class)
+        .setParameter("teamId", teamId)
+        .uniqueResult();
+  }
+
   public Optional<TeamMember> findByTeamIdAndUserId(Long teamId, Long userId) {
 
     return currentSession()

@@ -27,6 +27,9 @@ public class Team {
   @Column(name = "owner_id", nullable = false)
   private Long ownerId;
 
+  @Column(name = "max_members", nullable = false, columnDefinition = "integer default 1")
+  private Integer maxMembers = 1;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -38,6 +41,12 @@ public class Team {
   public Team(String name, Long ownerId) {
     this.name = name;
     this.ownerId = ownerId;
+  }
+
+  public Team(String name, Long ownerId, Integer maxMembers) {
+    this.name = name;
+    this.ownerId = ownerId;
+    this.maxMembers = maxMembers;
   }
 
   public Long getId() {
@@ -58,6 +67,14 @@ public class Team {
 
   public void setOwnerId(Long ownerId) {
     this.ownerId = ownerId;
+  }
+
+  public Integer getMaxMembers() {
+    return maxMembers;
+  }
+
+  public void setMaxMembers(Integer maxMembers) {
+    this.maxMembers = maxMembers;
   }
 
   public Instant getCreatedAt() {

@@ -6,6 +6,8 @@ import com.rupesh.ems.api.team.res.TeamResponse;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.core.Team;
 import com.rupesh.ems.db.TeamDao;
+import com.rupesh.ems.db.TeamMemberDao;
+import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
@@ -14,9 +16,11 @@ import java.util.List;
 public class TeamService {
 
   private final TeamDao teamDao;
+  private final TeamMemberDao teamMemberDao;
 
-  public TeamService(TeamDao teamDao) {
+  public TeamService(TeamDao teamDao, TeamMemberDao teamMemberDao) {
     this.teamDao = teamDao;
+    this.teamMemberDao = teamMemberDao;
   }
 
   private Team getOwnedTeam(Long teamId, UserPrincipal user) {
@@ -41,7 +45,7 @@ public class TeamService {
               throw new ConflictException("Team already exists");
             });
 
-    Team team = new Team(request.getName(), user.getId());
+    Team team = new Team(request.getName(), user.getId(), request.getMaxMembers());
 
     team = teamDao.create(team);
 
@@ -62,6 +66,14 @@ public class TeamService {
             });
 
     team.setName(request.getName());
+    if (request.getMaxMembers() != null) {
+      Long currentMemberCount = teamMemberDao.countByTeamId(teamId);
+      if (request.getMaxMembers() < currentMemberCount) {
+        throw new BadRequestException(
+            "Team member limit cannot be less than current member count");
+      }
+      team.setMaxMembers(request.getMaxMembers());
+    }
 
     team = teamDao.update(team);
 
