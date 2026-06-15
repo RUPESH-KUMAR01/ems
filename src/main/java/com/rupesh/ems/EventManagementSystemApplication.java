@@ -9,6 +9,7 @@ import com.rupesh.ems.core.User;
 import com.rupesh.ems.core.VerificationCode;
 import com.rupesh.ems.db.TeamDao;
 import com.rupesh.ems.db.TeamMemberDao;
+import com.rupesh.ems.db.TeamMembershipRequestDao;
 import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.db.VerificationDao;
 import com.rupesh.ems.resources.AdminResource;
@@ -41,7 +42,7 @@ public class EventManagementSystemApplication
 
   private final HibernateBundle<EventManagementSystemConfiguration> hibernateBundle =
       new HibernateBundle<EventManagementSystemConfiguration>(
-          User.class, VerificationCode.class, Team.class,TeamMember.class) {
+          User.class, VerificationCode.class, Team.class, TeamMember.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(
             EventManagementSystemConfiguration configuration) {
@@ -68,12 +69,13 @@ public class EventManagementSystemApplication
       final EventManagementSystemConfiguration configuration, final Environment environment) {
 
     SessionFactory sessionFactory = hibernateBundle.getSessionFactory();
-    
+
     UserDao userDao = new UserDao(sessionFactory);
     VerificationDao verificationDao = new VerificationDao(sessionFactory);
     TeamDao teamDao = new TeamDao(sessionFactory);
     TeamMemberDao teamMemberDao = new TeamMemberDao(sessionFactory);
-
+    TeamMembershipRequestDao teamMembershipRequestDao =
+        new TeamMembershipRequestDao(sessionFactory);
 
     UnitOfWorkAwareProxyFactory proxyFactory = new UnitOfWorkAwareProxyFactory(hibernateBundle);
 
@@ -89,7 +91,7 @@ public class EventManagementSystemApplication
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService, verificationService);
     AdminService adminService = new AdminService(userDao);
-    TeamService teamService = new TeamService(teamDao, teamMemberDao);
+    TeamService teamService = new TeamService(teamDao, teamMemberDao, teamMembershipRequestDao);
 
     JWTAuthenticator authenticator =
         proxyFactory.create(

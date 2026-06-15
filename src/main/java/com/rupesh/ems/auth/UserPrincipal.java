@@ -14,7 +14,14 @@ public class UserPrincipal implements Principal {
   private final boolean emailVerified;
   private final boolean phoneVerified;
 
-  public UserPrincipal(Long id, String email, String phone, String name, Role role, boolean emailVerified, boolean phoneVerified) {
+  public UserPrincipal(
+      Long id,
+      String email,
+      String phone,
+      String name,
+      Role role,
+      boolean emailVerified,
+      boolean phoneVerified) {
     this.id = id;
     this.email = email;
     this.phone = phone;
@@ -58,6 +65,7 @@ public class UserPrincipal implements Principal {
   public boolean isEmailVerified() {
     return emailVerified;
   }
+
   public boolean isPhoneVerified() {
     return phoneVerified;
   }

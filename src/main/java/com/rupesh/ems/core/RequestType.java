@@ -1,6 +1,6 @@
 package com.rupesh.ems.core;
 
 public enum RequestType {
-    INVITATION,
-    JOIN_REQUEST
+  INVITATION,
+  JOIN_REQUEST
 }

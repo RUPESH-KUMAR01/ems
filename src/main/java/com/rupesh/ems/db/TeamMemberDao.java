@@ -30,7 +30,7 @@ public class TeamMemberDao extends AbstractDAO<TeamMember> {
         .getResultList();
   }
 
-  public Long countByTeamId(Long teamId) {
+  public long countByTeamId(Long teamId) {
     return currentSession()
         .createQuery("SELECT COUNT(tm) FROM TeamMember tm WHERE tm.teamId = :teamId", Long.class)
         .setParameter("teamId", teamId)
@@ -54,5 +54,12 @@ public class TeamMemberDao extends AbstractDAO<TeamMember> {
     } else {
       return false;
     }
+  }
+
+  public void deleteByTeamId(Long teamId) {
+    currentSession()
+        .createMutationQuery("DELETE FROM TeamMember WHERE teamId = :teamId")
+        .setParameter("teamId", teamId)
+        .executeUpdate();
   }
 }

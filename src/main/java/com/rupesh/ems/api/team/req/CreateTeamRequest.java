@@ -1,7 +1,7 @@
 package com.rupesh.ems.api.team.req;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 
 public class CreateTeamRequest {
   @NotBlank private String name;

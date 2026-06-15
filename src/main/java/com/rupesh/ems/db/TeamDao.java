@@ -20,6 +20,10 @@ public class TeamDao extends AbstractDAO<Team> {
     return currentSession().merge(team);
   }
 
+  public List<Team> findAll() {
+    return currentSession().createQuery("FROM Team", Team.class).getResultList();
+  }
+
   public Optional<Team> getTeamById(Long id) {
     return Optional.ofNullable(get(id));
   }

@@ -15,7 +15,12 @@ public class TeamResponse {
   public TeamResponse() {}
 
   public TeamResponse(
-      Long id, String name, Long ownerId, Integer maxMembers, Instant createdAt, Instant updatedAt) {
+      Long id,
+      String name,
+      Long ownerId,
+      Integer maxMembers,
+      Instant createdAt,
+      Instant updatedAt) {
     this.id = id;
     this.name = name;
     this.ownerId = ownerId;
