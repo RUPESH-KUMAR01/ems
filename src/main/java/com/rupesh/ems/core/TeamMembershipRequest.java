@@ -25,6 +25,14 @@ public class TeamMembershipRequest {
 
   private Instant respondedAt;
 
+  public TeamMembershipRequest() {}
+
+  public TeamMembershipRequest(Long teamId, Long userId, RequestType type) {
+    this.teamId = teamId;
+    this.userId = userId;
+    this.type = type;
+  }
+
   public Long getId() {
     return id;
   }

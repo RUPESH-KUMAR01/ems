@@ -91,7 +91,8 @@ public class EventManagementSystemApplication
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService, verificationService);
     AdminService adminService = new AdminService(userDao);
-    TeamService teamService = new TeamService(teamDao, teamMemberDao, teamMembershipRequestDao);
+    TeamService teamService =
+        new TeamService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao);
 
     JWTAuthenticator authenticator =
         proxyFactory.create(

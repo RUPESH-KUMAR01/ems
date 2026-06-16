@@ -1,12 +1,8 @@
 package com.rupesh.ems.api.team.req;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-
 public class UpdateTeamRequest {
-  @NotBlank private String name;
+  private String name;
 
-  @Min(1)
   private Integer maxMembers;
 
   public UpdateTeamRequest() {}

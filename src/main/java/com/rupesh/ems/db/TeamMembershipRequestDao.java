@@ -77,6 +77,21 @@ public class TeamMembershipRequestDao extends AbstractDAO<TeamMembershipRequest>
         .getResultList();
   }
 
+  public List<TeamMembershipRequest> getPendingRequestsByUserId(Long userId) {
+
+    return currentSession()
+        .createQuery(
+            """
+            FROM TeamMembershipRequest
+            WHERE userId = :userId
+              AND status = :status
+            """,
+            TeamMembershipRequest.class)
+        .setParameter("userId", userId)
+        .setParameter("status", RequestStatus.PENDING)
+        .getResultList();
+  }
+
   public boolean delete(TeamMembershipRequest request) {
 
     if (request != null) {
