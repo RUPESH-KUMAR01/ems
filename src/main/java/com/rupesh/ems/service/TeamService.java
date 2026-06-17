@@ -1,9 +1,9 @@
 package com.rupesh.ems.service;
 
+import com.rupesh.ems.api.auth.res.UserResponse;
 import com.rupesh.ems.api.team.req.CreateTeamRequest;
 import com.rupesh.ems.api.team.req.RespondToRequestRequest;
 import com.rupesh.ems.api.team.req.UpdateTeamRequest;
-import com.rupesh.ems.api.team.res.TeamMemberResponse;
 import com.rupesh.ems.api.team.res.TeamMembershipResponse;
 import com.rupesh.ems.api.team.res.TeamResponse;
 import com.rupesh.ems.auth.UserPrincipal;
@@ -23,6 +23,7 @@ import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,8 +48,7 @@ public class TeamService {
     ensureVerified(user);
     ensureTeamNameAvailable(user.getId(), request.getName(), null);
 
-    Team team =
-        teamDao.create(new Team(request.getName(), user.getId(), request.getMaxMembers()));
+    Team team = teamDao.create(new Team(request.getName(), user.getId(), request.getMaxMembers()));
     teamMemberDao.create(new TeamMember(team.getOwnerId(), team.getId()));
 
     return new TeamResponse(team);
@@ -186,8 +186,7 @@ public class TeamService {
 
     Team team = getOwnedTeam(teamId, user);
     TeamMembershipRequest membershipRequest =
-        getPendingMembershipRequest(
-            teamId, userId, RequestType.JOIN_REQUEST, "Request not found");
+        getPendingMembershipRequest(teamId, userId, RequestType.JOIN_REQUEST, "Request not found");
 
     if (request.isApproved()) {
       ensureTeamHasCapacity(teamId, team);
@@ -266,9 +265,7 @@ public class TeamService {
     }
 
     User newOwner =
-        userDao
-            .getUserById(newOwnerId)
-            .orElseThrow(() -> new NotFoundException("User not found"));
+        userDao.getUserById(newOwnerId).orElseThrow(() -> new NotFoundException("User not found"));
 
     if (!newOwner.isFullyVerified()) {
       throw new BadRequestException("New owner must be fully verified");
@@ -284,20 +281,22 @@ public class TeamService {
     return new TeamResponse(teamDao.update(team));
   }
 
-  public List<TeamMemberResponse> getTeamMembers(Long teamId, UserPrincipal user) {
+  public List<UserResponse> getTeamMembers(Long teamId, UserPrincipal user) {
     ensureVerified(user);
 
     getOwnedTeam(teamId, user);
 
     return teamMemberDao.getUsersByTeamId(teamId).stream()
-        .map(TeamMemberResponse::new)
+        .map(TeamMember::getUserId)
+        .map(userDao::getUserById)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(UserResponse::new)
         .toList();
   }
 
   private Team getTeam(Long teamId) {
-    return teamDao
-        .getTeamById(teamId)
-        .orElseThrow(() -> new NotFoundException("Team not found"));
+    return teamDao.getTeamById(teamId).orElseThrow(() -> new NotFoundException("Team not found"));
   }
 
   private Team getOwnedTeam(Long teamId, UserPrincipal user) {

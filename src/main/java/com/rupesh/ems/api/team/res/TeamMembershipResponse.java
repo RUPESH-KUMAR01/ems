@@ -23,7 +23,6 @@ public class TeamMembershipResponse {
     this.userId = request.getUserId();
     this.type = request.getStatus().name();
   }
-  
 
   public Long getId() {
     return id;
