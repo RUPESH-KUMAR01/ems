@@ -8,22 +8,30 @@ import java.time.Instant;
     name = "team_membership_requests",
     uniqueConstraints = {@UniqueConstraint(columnNames = {"team_id", "user_id"})})
 public class TeamMembershipRequest {
-
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(name = "team_id", nullable = false)
   private Long teamId;
 
+  @Column(name = "user_id", nullable = false)
   private Long userId;
 
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
+
+  @Column(name = "responded_at")
+  private Instant respondedAt;
+
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private RequestType type;
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private RequestStatus status = RequestStatus.PENDING;
 
-  private Instant createdAt;
-
-  private Instant respondedAt;
 
   public TeamMembershipRequest() {}
 

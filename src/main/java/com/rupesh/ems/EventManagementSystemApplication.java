@@ -5,6 +5,7 @@ import com.rupesh.ems.auth.RoleAuthorizer;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.core.Team;
 import com.rupesh.ems.core.TeamMember;
+import com.rupesh.ems.core.TeamMembershipRequest;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.core.VerificationCode;
 import com.rupesh.ems.db.TeamDao;
@@ -42,7 +43,7 @@ public class EventManagementSystemApplication
 
   private final HibernateBundle<EventManagementSystemConfiguration> hibernateBundle =
       new HibernateBundle<EventManagementSystemConfiguration>(
-          User.class, VerificationCode.class, Team.class, TeamMember.class) {
+          User.class, VerificationCode.class, Team.class, TeamMember.class,TeamMembershipRequest.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(
             EventManagementSystemConfiguration configuration) {
