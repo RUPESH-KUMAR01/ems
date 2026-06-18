@@ -32,7 +32,6 @@ public class TeamMembershipRequest {
   @Column(nullable = false)
   private RequestStatus status = RequestStatus.PENDING;
 
-
   public TeamMembershipRequest() {}
 
   public TeamMembershipRequest(Long teamId, Long userId, RequestType type) {

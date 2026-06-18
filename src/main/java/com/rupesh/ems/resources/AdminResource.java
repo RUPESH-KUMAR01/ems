@@ -5,6 +5,8 @@ import com.rupesh.ems.api.admin.req.CreateManagedUserRequest;
 import com.rupesh.ems.api.admin.req.UpdateUserRequest;
 import com.rupesh.ems.api.admin.res.AdminMessageResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
+import com.rupesh.ems.api.team.res.TeamMembershipResponse;
+import com.rupesh.ems.api.team.res.TeamResponse;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.service.AdminService;
 import io.dropwizard.auth.Auth;
@@ -87,5 +89,56 @@ public class AdminResource {
   @Path("/users/{id}")
   public AdminMessageResponse deleteUser(@PathParam("id") Long userId, @Auth UserPrincipal admin) {
     return adminService.deleteUser(userId, admin);
+  }
+
+  @GET
+  @UnitOfWork
+  @Path("/teams")
+  public List<TeamResponse> getAllTeams() {
+    return adminService.getAllTeams();
+  }
+
+  @GET
+  @UnitOfWork
+  @Path("/teams/{teamId}")
+  public TeamResponse getTeamById(@PathParam("teamId") Long teamId) {
+    return adminService.getTeamById(teamId);
+  }
+
+  @GET
+  @UnitOfWork
+  @Path("/teams/{teamId}/members")
+  public List<UserResponse> getTeamMembers(@PathParam("teamId") Long teamId) {
+    return adminService.getTeamMembers(teamId);
+  }
+
+  @GET
+  @UnitOfWork
+  @Path("/teams/{teamId}/requests")
+  public List<TeamMembershipResponse> getTeamMembershipRequests(@PathParam("teamId") Long teamId) {
+    return adminService.getTeamMembershipRequests(teamId);
+  }
+
+  @PUT
+  @UnitOfWork
+  @Path("/teams/{teamId}/owner/{userId}")
+  public TeamResponse transferTeamOwnership(
+      @PathParam("teamId") Long teamId, @PathParam("userId") Long userId) {
+    return adminService.transferTeamOwnership(teamId, userId);
+  }
+
+  @DELETE
+  @UnitOfWork
+  @Path("/teams/{teamId}/members/{userId}")
+  public AdminMessageResponse removeUserFromTeam(
+      @PathParam("teamId") Long teamId, @PathParam("userId") Long userId) {
+    return adminService.removeUserFromTeam(teamId, userId);
+  }
+
+  @DELETE
+  @UnitOfWork
+  @Path("/teams/{teamId}")
+  public AdminMessageResponse deleteTeam(@PathParam("teamId") Long teamId) {
+    return adminService.deleteTeam(teamId);
   }
 }

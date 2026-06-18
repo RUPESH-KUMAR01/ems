@@ -39,14 +39,6 @@ public class TeamResource {
   }
 
   @GET
-  @Path("/all")
-  @RolesAllowed("ADMIN")
-  @UnitOfWork
-  public List<TeamResponse> getAllTeams() {
-    return teamService.getAllTeams();
-  }
-
-  @GET
   @Path("/discover")
   @UnitOfWork
   public List<TeamResponse> getTeamsCanJoin(@Auth UserPrincipal user) {

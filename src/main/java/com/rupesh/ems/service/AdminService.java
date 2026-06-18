@@ -6,19 +6,38 @@ import com.rupesh.ems.api.admin.req.CreateManagedUserRequest;
 import com.rupesh.ems.api.admin.req.UpdateUserRequest;
 import com.rupesh.ems.api.admin.res.AdminMessageResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
+import com.rupesh.ems.api.team.res.TeamMembershipResponse;
+import com.rupesh.ems.api.team.res.TeamResponse;
 import com.rupesh.ems.auth.UserPrincipal;
+import com.rupesh.ems.core.Team;
+import com.rupesh.ems.core.TeamMember;
+import com.rupesh.ems.core.TeamMembershipRequest;
 import com.rupesh.ems.core.User;
+import com.rupesh.ems.db.TeamDao;
+import com.rupesh.ems.db.TeamMemberDao;
+import com.rupesh.ems.db.TeamMembershipRequestDao;
 import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.util.List;
+import java.util.Optional;
 
 public class AdminService {
   private final UserDao userDao;
+  private final TeamDao teamDao;
+  private final TeamMemberDao teamMemberDao;
+  private final TeamMembershipRequestDao teamMembershipRequestDao;
 
-  public AdminService(UserDao userDao) {
+  public AdminService(
+      UserDao userDao,
+      TeamDao teamDao,
+      TeamMemberDao teamMemberDao,
+      TeamMembershipRequestDao teamMembershipRequestDao) {
     this.userDao = userDao;
+    this.teamDao = teamDao;
+    this.teamMemberDao = teamMemberDao;
+    this.teamMembershipRequestDao = teamMembershipRequestDao;
   }
 
   public UserResponse createUser(CreateManagedUserRequest request) {
@@ -126,5 +145,86 @@ public class AdminService {
     userDao.update(user);
 
     return new UserResponse(user);
+  }
+
+  public List<TeamResponse> getAllTeams() {
+    return teamDao.findAll().stream().map(TeamResponse::new).toList();
+  }
+
+  public TeamResponse getTeamById(Long teamId) {
+    return new TeamResponse(getTeamOrThrow(teamId));
+  }
+
+  public List<UserResponse> getTeamMembers(Long teamId) {
+    getTeamOrThrow(teamId);
+
+    return teamMemberDao.getUsersByTeamId(teamId).stream()
+        .map(TeamMember::getUserId)
+        .map(userDao::getUserById)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(UserResponse::new)
+        .toList();
+  }
+
+  public List<TeamMembershipResponse> getTeamMembershipRequests(Long teamId) {
+    getTeamOrThrow(teamId);
+
+    return teamMembershipRequestDao.getRequestsByTeamId(teamId).stream()
+        .map(TeamMembershipResponse::new)
+        .toList();
+  }
+
+  public TeamResponse transferTeamOwnership(Long teamId, Long newOwnerId) {
+    Team team = getTeamOrThrow(teamId);
+    User newOwner =
+        userDao.getUserById(newOwnerId).orElseThrow(() -> new NotFoundException("User not found"));
+
+    if (!newOwner.isFullyVerified()) {
+      throw new BadRequestException("New owner must be fully verified");
+    }
+
+    teamMemberDao
+        .findByTeamIdAndUserId(teamId, newOwnerId)
+        .orElseThrow(() -> new NotFoundException("New owner must be a member of the team"));
+
+    team.setOwnerId(newOwnerId);
+    return new TeamResponse(teamDao.update(team));
+  }
+
+  public AdminMessageResponse removeUserFromTeam(Long teamId, Long userId) {
+    Team team = getTeamOrThrow(teamId);
+    if (team.getOwnerId().equals(userId)) {
+      throw new BadRequestException("Owner cannot be removed from team");
+    }
+
+    TeamMember membership =
+        teamMemberDao
+            .findByTeamIdAndUserId(teamId, userId)
+            .orElseThrow(() -> new NotFoundException("Team member not found"));
+
+    teamMemberDao.delete(membership);
+
+    TeamMembershipRequest request =
+        teamMembershipRequestDao.findByTeamIdAndUserId(teamId, userId).orElse(null);
+    if (request != null) {
+      teamMembershipRequestDao.delete(request);
+    }
+
+    return new AdminMessageResponse("User removed from team successfully");
+  }
+
+  public AdminMessageResponse deleteTeam(Long teamId) {
+    Team team = getTeamOrThrow(teamId);
+
+    teamMemberDao.deleteByTeamId(teamId);
+    teamMembershipRequestDao.deleteByTeamId(teamId);
+    teamDao.delete(team);
+
+    return new AdminMessageResponse("Team deleted successfully");
+  }
+
+  private Team getTeamOrThrow(Long teamId) {
+    return teamDao.getTeamById(teamId).orElseThrow(() -> new NotFoundException("Team not found"));
   }
 }

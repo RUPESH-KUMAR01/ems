@@ -43,7 +43,11 @@ public class EventManagementSystemApplication
 
   private final HibernateBundle<EventManagementSystemConfiguration> hibernateBundle =
       new HibernateBundle<EventManagementSystemConfiguration>(
-          User.class, VerificationCode.class, Team.class, TeamMember.class,TeamMembershipRequest.class) {
+          User.class,
+          VerificationCode.class,
+          Team.class,
+          TeamMember.class,
+          TeamMembershipRequest.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(
             EventManagementSystemConfiguration configuration) {
@@ -91,7 +95,8 @@ public class EventManagementSystemApplication
     VerificationService verificationService =
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService, verificationService);
-    AdminService adminService = new AdminService(userDao);
+    AdminService adminService =
+      new AdminService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao);
     TeamService teamService =
         new TeamService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao);
 
