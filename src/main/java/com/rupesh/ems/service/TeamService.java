@@ -236,10 +236,6 @@ public class TeamService {
     }
   }
 
-  public List<TeamResponse> getAllTeams() {
-    return teamDao.findAll().stream().map(TeamResponse::new).toList();
-  }
-
   public List<TeamResponse> getTeamsCanJoin(UserPrincipal user) {
     ensureVerified(user);
 
@@ -284,7 +280,14 @@ public class TeamService {
   public List<UserResponse> getTeamMembers(Long teamId, UserPrincipal user) {
     ensureVerified(user);
 
-    getOwnedTeam(teamId, user);
+    teamMemberDao.getUsersByTeamId(teamId).stream()
+        .map(TeamMember::getUserId)
+        .map(userDao::getUserById)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(u -> u.getId().equals(user.getId()))
+        .findFirst()
+        .orElseThrow(() -> new NotFoundException("You are not a member of this team"));
 
     return teamMemberDao.getUsersByTeamId(teamId).stream()
         .map(TeamMember::getUserId)
