@@ -2,6 +2,7 @@ package com.rupesh.ems.api.auth.req;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class CreateUserRequest {
@@ -14,6 +15,9 @@ public class CreateUserRequest {
   @Size(min = 6)
   private String password;
 
+  @Pattern(
+    regexp = "^\\d{10}$",
+  message = "Phone number must contain exactly 10 digits")
   @NotBlank private String phone;
 
   public CreateUserRequest() {}
