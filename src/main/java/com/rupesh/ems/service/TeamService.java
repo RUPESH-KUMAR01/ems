@@ -193,6 +193,10 @@ public class TeamService {
       ensureNotTeamMember(teamId, userId, "User is already a member of this team");
       teamMemberDao.create(new TeamMember(userId, teamId));
     }
+    if(request.isRejected()) {
+      teamMembershipRequestDao.delete(membershipRequest);
+      return new TeamMembershipResponse(membershipRequest);
+    }
 
     applyMembershipResponse(membershipRequest, request);
     return new TeamMembershipResponse(teamMembershipRequestDao.update(membershipRequest));
@@ -210,6 +214,11 @@ public class TeamService {
       ensureTeamHasCapacity(teamId, getTeam(teamId));
       ensureNotTeamMember(teamId, user.getId(), "You are already a member of this team");
       teamMemberDao.create(new TeamMember(user.getId(), teamId));
+    }
+
+    if(request.isRejected()) {
+      teamMembershipRequestDao.delete(invitation);
+      return new TeamMembershipResponse(invitation);
     }
 
     applyMembershipResponse(invitation, request);
@@ -270,8 +279,13 @@ public class TeamService {
     teamMemberDao
         .findByTeamIdAndUserId(teamId, newOwnerId)
         .orElseThrow(() -> new NotFoundException("New owner must be a member of the team"));
-
-    ensureTeamNameAvailable(newOwnerId, team.getName(), null);
+    teamDao
+        .findByOwnerIdAndName(newOwnerId, team.getName())
+        .filter(existing -> !existing.getId().equals(teamId))
+        .ifPresent(existing -> {
+            throw new ConflictException(
+                "New owner already owns a team with the same name");
+        });
     team.setOwnerId(newOwnerId);
 
     return new TeamResponse(teamDao.update(team));
@@ -279,8 +293,8 @@ public class TeamService {
 
   public List<UserResponse> getTeamMembers(Long teamId, UserPrincipal user) {
     ensureVerified(user);
-
-    teamMemberDao.getUsersByTeamId(teamId).stream()
+    List<TeamMember> teamMembers = teamMemberDao.getUsersByTeamId(teamId);
+    teamMembers.stream()
         .map(TeamMember::getUserId)
         .map(userDao::getUserById)
         .filter(Optional::isPresent)
@@ -289,7 +303,7 @@ public class TeamService {
         .findFirst()
         .orElseThrow(() -> new NotFoundException("You are not a member of this team"));
 
-    return teamMemberDao.getUsersByTeamId(teamId).stream()
+    return teamMembers.stream()
         .map(TeamMember::getUserId)
         .map(userDao::getUserById)
         .filter(Optional::isPresent)
@@ -361,6 +375,7 @@ public class TeamService {
   private void ensureNoMembershipRequest(Long teamId, Long userId, String message) {
     teamMembershipRequestDao
         .findByTeamIdAndUserId(teamId, userId)
+        .filter(request -> request.getStatus() == RequestStatus.PENDING)
         .ifPresent(
             existing -> {
               throw new ConflictException(message);
