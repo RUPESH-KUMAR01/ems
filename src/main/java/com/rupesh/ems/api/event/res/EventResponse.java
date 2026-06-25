@@ -4,6 +4,7 @@ import com.rupesh.ems.core.Event;
 import com.rupesh.ems.core.EventStatus;
 import com.rupesh.ems.core.EventType;
 import com.rupesh.ems.core.EventVisibility;
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public class EventResponse {
@@ -18,6 +19,7 @@ public class EventResponse {
   private final Integer maxParticipants;
   private final Integer minTeamSize;
   private final Integer maxTeamSize;
+  private final BigDecimal registrationFee;
   private final Instant registrationDeadline;
   private final Instant createdAt;
   private final Instant updatedAt;
@@ -33,6 +35,7 @@ public class EventResponse {
     this.maxParticipants = event.getMaxParticipants();
     this.minTeamSize = event.getMinTeamSize();
     this.maxTeamSize = event.getMaxTeamSize();
+    this.registrationFee = event.getRegistrationFee();
     this.registrationDeadline = event.getRegistrationDeadline();
     this.createdAt = event.getCreatedAt();
     this.updatedAt = event.getUpdatedAt();
@@ -76,6 +79,10 @@ public class EventResponse {
 
   public Integer getMaxTeamSize() {
     return maxTeamSize;
+  }
+
+  public BigDecimal getRegistrationFee() {
+    return registrationFee;
   }
 
   public Instant getRegistrationDeadline() {

@@ -3,8 +3,11 @@ package com.rupesh.ems.api.event.req;
 import com.rupesh.ems.core.EventStatus;
 import com.rupesh.ems.core.EventType;
 import com.rupesh.ems.core.EventVisibility;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public class UpdateEventRequest {
@@ -27,6 +30,10 @@ public class UpdateEventRequest {
 
   @Min(1)
   private Integer maxTeamSize;
+
+  @DecimalMin(value = "0.00")
+  @Digits(integer = 8, fraction = 2)
+  private BigDecimal registrationFee;
 
   @Future private Instant registrationDeadline;
 
@@ -66,6 +73,10 @@ public class UpdateEventRequest {
 
   public Integer getMaxTeamSize() {
     return maxTeamSize;
+  }
+
+  public BigDecimal getRegistrationFee() {
+    return registrationFee;
   }
 
   public Instant getRegistrationDeadline() {

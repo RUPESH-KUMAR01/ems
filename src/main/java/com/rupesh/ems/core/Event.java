@@ -1,6 +1,7 @@
 package com.rupesh.ems.core;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -41,6 +42,9 @@ public class Event {
   @Column(name = "max_team_size")
   private Integer maxTeamSize;
 
+  @Column(name = "registration_fee", nullable = false, precision = 10, scale = 2)
+  private BigDecimal registrationFee = BigDecimal.ZERO;
+
   @Column(name = "registration_deadline", nullable = false)
   private Instant registrationDeadline;
 
@@ -77,6 +81,7 @@ public class Event {
       Integer maxParticipants,
       Integer minTeamSize,
       Integer maxTeamSize,
+      BigDecimal registrationFee,
       Instant registrationDeadline,
       Instant startTime,
       Instant endTime) {
@@ -88,6 +93,7 @@ public class Event {
     this.maxParticipants = maxParticipants;
     this.minTeamSize = minTeamSize;
     this.maxTeamSize = maxTeamSize;
+    this.registrationFee = registrationFee;
     this.registrationDeadline = registrationDeadline;
     this.startTime = startTime;
     this.endTime = endTime;
@@ -131,6 +137,10 @@ public class Event {
 
   public Integer getMaxTeamSize() {
     return maxTeamSize;
+  }
+
+  public BigDecimal getRegistrationFee() {
+    return registrationFee;
   }
 
   public Instant getRegistrationDeadline() {
@@ -179,6 +189,10 @@ public class Event {
 
   public void setMaxTeamSize(Integer maxTeamSize) {
     this.maxTeamSize = maxTeamSize;
+  }
+
+  public void setRegistrationFee(BigDecimal registrationFee) {
+    this.registrationFee = registrationFee;
   }
 
   public void setRegistrationDeadline(Instant registrationDeadline) {

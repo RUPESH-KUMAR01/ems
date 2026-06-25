@@ -12,6 +12,7 @@ import com.rupesh.ems.db.EventDao;
 import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
+import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -52,6 +53,7 @@ public class EventService {
             request.getMaxParticipants(),
             request.getMinTeamSize(),
             request.getMaxTeamSize(),
+            request.getRegistrationFee(),
             request.getRegistrationDeadline(),
             request.getStartTime(),
             request.getEndTime());
@@ -91,6 +93,10 @@ public class EventService {
 
       if (request.getMaxTeamSize() != null) {
         event.setMaxTeamSize(request.getMaxTeamSize());
+      }
+
+      if (request.getRegistrationFee() != null) {
+        event.setRegistrationFee(request.getRegistrationFee());
       }
     }
 
@@ -208,6 +214,14 @@ public class EventService {
 
     if (event.getEndTime() == null) {
       throw new BadRequestException("Event end time is required");
+    }
+
+    if (event.getRegistrationFee() == null) {
+      throw new BadRequestException("Registration fee is required");
+    }
+
+    if (event.getRegistrationFee().compareTo(BigDecimal.ZERO) < 0) {
+      throw new BadRequestException("Registration fee cannot be negative");
     }
 
     if (!event.getRegistrationDeadline().isBefore(event.getStartTime())) {
