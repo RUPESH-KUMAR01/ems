@@ -102,7 +102,7 @@ public class EventManagementSystemApplication
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService, verificationService);
     AdminService adminService =
-        new AdminService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao,eventDao);
+        new AdminService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao, eventDao);
     TeamService teamService =
         new TeamService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao);
 

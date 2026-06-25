@@ -37,12 +37,12 @@ public class AdminService {
       TeamDao teamDao,
       TeamMemberDao teamMemberDao,
       TeamMembershipRequestDao teamMembershipRequestDao,
-    EventDao eventDao) {
+      EventDao eventDao) {
     this.userDao = userDao;
     this.teamDao = teamDao;
     this.teamMemberDao = teamMemberDao;
     this.teamMembershipRequestDao = teamMembershipRequestDao;
-    this.eventDao=eventDao;
+    this.eventDao = eventDao;
   }
 
   public UserResponse createUser(CreateManagedUserRequest request) {

@@ -142,6 +142,7 @@ public class AdminResource {
   public AdminMessageResponse deleteTeam(@PathParam("teamId") Long teamId) {
     return adminService.deleteTeam(teamId);
   }
+
   @GET
   @UnitOfWork
   @Path("/events")

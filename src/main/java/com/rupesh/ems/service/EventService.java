@@ -12,9 +12,25 @@ import com.rupesh.ems.db.EventDao;
 import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class EventService {
+
+  private static final Map<EventStatus, Set<EventStatus>> ALLOWED_STATUS_TRANSITIONS =
+      new EnumMap<>(
+          Map.of(
+              EventStatus.DRAFT,
+              EnumSet.of(EventStatus.PUBLISHED),
+              EventStatus.PUBLISHED,
+              EnumSet.of(EventStatus.CANCELLED, EventStatus.COMPLETED),
+              EventStatus.CANCELLED,
+              EnumSet.noneOf(EventStatus.class),
+              EventStatus.COMPLETED,
+              EnumSet.noneOf(EventStatus.class)));
 
   private final EventDao eventDao;
 
@@ -48,6 +64,7 @@ public class EventService {
   public EventResponse updateEvent(UserPrincipal user, Long eventId, UpdateEventRequest request) {
 
     Event event = getOwnedEvent(eventId, user);
+    ensureEventCanBeUpdated(event);
 
     if (request.getName() != null) {
       ensureEventNameAvailable(user.getId(), request.getName(), eventId);
@@ -101,12 +118,7 @@ public class EventService {
   public EventResponse publishEvent(Long eventId, UserPrincipal user) {
 
     Event event = getOwnedEvent(eventId, user);
-
-    if (event.getStatus() != EventStatus.DRAFT) {
-      throw new BadRequestException("Only draft events can be published");
-    }
-
-    event.setStatus(EventStatus.PUBLISHED);
+    transitionEvent(event, EventStatus.PUBLISHED);
 
     return new EventResponse(eventDao.update(event));
   }
@@ -114,8 +126,7 @@ public class EventService {
   public EventResponse cancelEvent(Long eventId, UserPrincipal user) {
 
     Event event = getOwnedEvent(eventId, user);
-
-    event.setStatus(EventStatus.CANCELLED);
+    transitionEvent(event, EventStatus.CANCELLED);
 
     return new EventResponse(eventDao.update(event));
   }
@@ -123,18 +134,18 @@ public class EventService {
   public EventResponse completeEvent(Long eventId, UserPrincipal user) {
 
     Event event = getOwnedEvent(eventId, user);
-
-    event.setStatus(EventStatus.COMPLETED);
+    transitionEvent(event, EventStatus.COMPLETED);
 
     return new EventResponse(eventDao.update(event));
   }
 
   public EventResponse getEventById(Long eventId) {
-
-    return eventDao
-        .getEventById(eventId)
-        .map(EventResponse::new)
-        .orElseThrow(() -> new NotFoundException("Event not found"));
+    Event event =
+        eventDao.getEventById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
+    if (!isPubliclyVisible(event)) {
+      throw new NotFoundException("Event not found");
+    }
+    return new EventResponse(event);
   }
 
   public List<EventResponse> getEventsByCreatedBy(UserPrincipal user) {
@@ -144,7 +155,10 @@ public class EventService {
 
   public List<EventResponse> getEventsByName(String name) {
 
-    return eventDao.getEventsByName(name).stream().map(EventResponse::new).toList();
+    return eventDao.getEventsByName(name).stream()
+        .filter(this::isPubliclyVisible)
+        .map(EventResponse::new)
+        .toList();
   }
 
   public List<EventResponse> getAllEvents() {
@@ -153,13 +167,7 @@ public class EventService {
   }
 
   public List<EventResponse> getVisibleEvents() {
-    return eventDao.getAllEvents().stream()
-        .filter(
-            e ->
-                e.getStatus().equals(EventStatus.PUBLISHED)
-                    && e.getVisibility().equals(EventVisibility.PUBLIC))
-        .map(EventResponse::new)
-        .toList();
+    return eventDao.getVisibleEvents().stream().map(EventResponse::new).toList();
   }
 
   public void deleteEvent(UserPrincipal user, Long eventId) {
@@ -190,7 +198,19 @@ public class EventService {
 
   private void validateEvent(Event event) {
 
-    if (event.getRegistrationDeadline().isAfter(event.getStartTime())) {
+    if (event.getRegistrationDeadline() == null) {
+      throw new BadRequestException("Registration deadline is required");
+    }
+
+    if (event.getStartTime() == null) {
+      throw new BadRequestException("Event start time is required");
+    }
+
+    if (event.getEndTime() == null) {
+      throw new BadRequestException("Event end time is required");
+    }
+
+    if (!event.getRegistrationDeadline().isBefore(event.getStartTime())) {
       throw new BadRequestException("Registration deadline must be before event start time");
     }
 
@@ -217,5 +237,27 @@ public class EventService {
         throw new BadRequestException("Minimum team size cannot exceed maximum team size");
       }
     }
+  }
+
+  private void ensureEventCanBeUpdated(Event event) {
+    if (event.getStatus() == EventStatus.CANCELLED || event.getStatus() == EventStatus.COMPLETED) {
+      throw new BadRequestException("Cancelled or completed events cannot be updated");
+    }
+  }
+
+  private void transitionEvent(Event event, EventStatus newStatus) {
+    EventStatus currentStatus = event.getStatus();
+    if (!ALLOWED_STATUS_TRANSITIONS.getOrDefault(currentStatus, Set.of()).contains(newStatus)) {
+      throw new BadRequestException(
+          "Invalid event status transition from %s to %s".formatted(currentStatus, newStatus));
+    }
+
+    validateEvent(event);
+    event.setStatus(newStatus);
+  }
+
+  private boolean isPubliclyVisible(Event event) {
+    return event.getStatus() == EventStatus.PUBLISHED
+        && event.getVisibility() == EventVisibility.PUBLIC;
   }
 }

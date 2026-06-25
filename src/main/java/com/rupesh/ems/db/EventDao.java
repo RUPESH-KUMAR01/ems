@@ -1,6 +1,8 @@
 package com.rupesh.ems.db;
 
 import com.rupesh.ems.core.Event;
+import com.rupesh.ems.core.EventStatus;
+import com.rupesh.ems.core.EventVisibility;
 import io.dropwizard.hibernate.AbstractDAO;
 import java.util.List;
 import java.util.Optional;
@@ -57,5 +59,19 @@ public class EventDao extends AbstractDAO<Event> {
         .setParameter("ownerId", ownerId)
         .setParameter("name", name)
         .uniqueResultOptional();
+  }
+
+  public List<Event> getVisibleEvents() {
+    return currentSession()
+        .createQuery(
+            """
+          FROM Event
+          WHERE status = :status
+            AND visibility = :visibility
+          """,
+            Event.class)
+        .setParameter("status", EventStatus.PUBLISHED)
+        .setParameter("visibility", EventVisibility.PUBLIC)
+        .getResultList();
   }
 }

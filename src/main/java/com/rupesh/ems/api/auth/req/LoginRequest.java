@@ -1,8 +1,10 @@
 package com.rupesh.ems.api.auth.req;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class LoginRequest {
-  private String email;
-  private String password;
+  @NotBlank private String email;
+  @NotBlank private String password;
 
   public LoginRequest(String email, String password) {
     this.email = email;
