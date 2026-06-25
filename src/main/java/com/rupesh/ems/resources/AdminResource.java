@@ -5,6 +5,7 @@ import com.rupesh.ems.api.admin.req.CreateManagedUserRequest;
 import com.rupesh.ems.api.admin.req.UpdateUserRequest;
 import com.rupesh.ems.api.admin.res.AdminMessageResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
+import com.rupesh.ems.api.event.res.EventResponse;
 import com.rupesh.ems.api.team.res.TeamMembershipResponse;
 import com.rupesh.ems.api.team.res.TeamResponse;
 import com.rupesh.ems.auth.UserPrincipal;
@@ -140,5 +141,11 @@ public class AdminResource {
   @Path("/teams/{teamId}")
   public AdminMessageResponse deleteTeam(@PathParam("teamId") Long teamId) {
     return adminService.deleteTeam(teamId);
+  }
+  @GET
+  @UnitOfWork
+  @Path("/events")
+  public List<EventResponse> getAllEvents() {
+    return adminService.getAllEvents();
   }
 }

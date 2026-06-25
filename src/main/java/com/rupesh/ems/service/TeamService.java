@@ -193,7 +193,7 @@ public class TeamService {
       ensureNotTeamMember(teamId, userId, "User is already a member of this team");
       teamMemberDao.create(new TeamMember(userId, teamId));
     }
-    if(request.isRejected()) {
+    if (request.isRejected()) {
       teamMembershipRequestDao.delete(membershipRequest);
       return new TeamMembershipResponse(membershipRequest);
     }
@@ -216,7 +216,7 @@ public class TeamService {
       teamMemberDao.create(new TeamMember(user.getId(), teamId));
     }
 
-    if(request.isRejected()) {
+    if (request.isRejected()) {
       teamMembershipRequestDao.delete(invitation);
       return new TeamMembershipResponse(invitation);
     }
@@ -282,10 +282,10 @@ public class TeamService {
     teamDao
         .findByOwnerIdAndName(newOwnerId, team.getName())
         .filter(existing -> !existing.getId().equals(teamId))
-        .ifPresent(existing -> {
-            throw new ConflictException(
-                "New owner already owns a team with the same name");
-        });
+        .ifPresent(
+            existing -> {
+              throw new ConflictException("New owner already owns a team with the same name");
+            });
     team.setOwnerId(newOwnerId);
 
     return new TeamResponse(teamDao.update(team));

@@ -3,11 +3,13 @@ package com.rupesh.ems;
 import com.rupesh.ems.auth.JWTAuthenticator;
 import com.rupesh.ems.auth.RoleAuthorizer;
 import com.rupesh.ems.auth.UserPrincipal;
+import com.rupesh.ems.core.Event;
 import com.rupesh.ems.core.Team;
 import com.rupesh.ems.core.TeamMember;
 import com.rupesh.ems.core.TeamMembershipRequest;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.core.VerificationCode;
+import com.rupesh.ems.db.EventDao;
 import com.rupesh.ems.db.TeamDao;
 import com.rupesh.ems.db.TeamMemberDao;
 import com.rupesh.ems.db.TeamMembershipRequestDao;
@@ -15,12 +17,14 @@ import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.db.VerificationDao;
 import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
+import com.rupesh.ems.resources.EventResource;
 import com.rupesh.ems.resources.TeamResource;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
 import com.rupesh.ems.service.BootstrapAdminService;
 import com.rupesh.ems.service.Email.EmailService;
 import com.rupesh.ems.service.Email.SMTPEmailService;
+import com.rupesh.ems.service.EventService;
 import com.rupesh.ems.service.JWTService;
 import com.rupesh.ems.service.Sms.ConsoleSmsService;
 import com.rupesh.ems.service.Sms.SmsService;
@@ -47,7 +51,8 @@ public class EventManagementSystemApplication
           VerificationCode.class,
           Team.class,
           TeamMember.class,
-          TeamMembershipRequest.class) {
+          TeamMembershipRequest.class,
+          Event.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(
             EventManagementSystemConfiguration configuration) {
@@ -81,6 +86,7 @@ public class EventManagementSystemApplication
     TeamMemberDao teamMemberDao = new TeamMemberDao(sessionFactory);
     TeamMembershipRequestDao teamMembershipRequestDao =
         new TeamMembershipRequestDao(sessionFactory);
+    EventDao eventDao = new EventDao(sessionFactory);
 
     UnitOfWorkAwareProxyFactory proxyFactory = new UnitOfWorkAwareProxyFactory(hibernateBundle);
 
@@ -96,9 +102,11 @@ public class EventManagementSystemApplication
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService, verificationService);
     AdminService adminService =
-      new AdminService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao);
+        new AdminService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao,eventDao);
     TeamService teamService =
         new TeamService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao);
+
+    EventService eventService = new EventService(eventDao);
 
     JWTAuthenticator authenticator =
         proxyFactory.create(
@@ -122,5 +130,6 @@ public class EventManagementSystemApplication
     environment.jersey().register(new AuthResource(authService));
     environment.jersey().register(new AdminResource(adminService));
     environment.jersey().register(new TeamResource(teamService));
+    environment.jersey().register(new EventResource(eventService));
   }
 }

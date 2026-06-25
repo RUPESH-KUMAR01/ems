@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "events")
+@Table(name = "events", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "created_by"}))
 public class Event {
 
   @Id
@@ -26,7 +26,7 @@ public class Event {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private EventVisibility visibility;
+  private EventVisibility visibility = EventVisibility.PRIVATE;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -50,6 +50,12 @@ public class Event {
   @Column(name = "updated_at")
   private Instant updatedAt;
 
+  @Column(name = "start_time", nullable = false)
+  private Instant startTime;
+
+  @Column(name = "end_time", nullable = false)
+  private Instant endTime;
+
   @PrePersist
   protected void onCreate() {
     createdAt = Instant.now();
@@ -62,8 +68,18 @@ public class Event {
 
   public Event() {}
 
-  public Event(String name, String description, Long createdBy, EventType type, EventVisibility visibility,
-               Integer maxParticipants, Integer minTeamSize, Integer maxTeamSize, Instant registrationDeadline) {
+  public Event(
+      String name,
+      String description,
+      Long createdBy,
+      EventType type,
+      EventVisibility visibility,
+      Integer maxParticipants,
+      Integer minTeamSize,
+      Integer maxTeamSize,
+      Instant registrationDeadline,
+      Instant startTime,
+      Instant endTime) {
     this.name = name;
     this.description = description;
     this.createdBy = createdBy;
@@ -73,6 +89,8 @@ public class Event {
     this.minTeamSize = minTeamSize;
     this.maxTeamSize = maxTeamSize;
     this.registrationDeadline = registrationDeadline;
+    this.startTime = startTime;
+    this.endTime = endTime;
   }
 
   public Long getId() {
@@ -95,11 +113,9 @@ public class Event {
     return type;
   }
 
-
   public EventVisibility getVisibility() {
     return visibility;
   }
-
 
   public EventStatus getStatus() {
     return status;
@@ -115,7 +131,7 @@ public class Event {
 
   public Integer getMaxTeamSize() {
     return maxTeamSize;
-  } 
+  }
 
   public Instant getRegistrationDeadline() {
     return registrationDeadline;
@@ -148,6 +164,7 @@ public class Event {
   public void setType(EventType type) {
     this.type = type;
   }
+
   public void setVisibility(EventVisibility visibility) {
     this.visibility = visibility;
   }
@@ -170,5 +187,21 @@ public class Event {
 
   public void setCreatedBy(Long createdBy) {
     this.createdBy = createdBy;
+  }
+
+  public void setStartTime(Instant startTime) {
+    this.startTime = startTime;
+  }
+
+  public void setEndTime(Instant endTime) {
+    this.endTime = endTime;
+  }
+
+  public Instant getStartTime() {
+    return startTime;
+  }
+
+  public Instant getEndTime() {
+    return endTime;
   }
 }

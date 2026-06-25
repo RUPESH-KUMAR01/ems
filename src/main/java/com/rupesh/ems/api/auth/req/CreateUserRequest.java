@@ -15,10 +15,9 @@ public class CreateUserRequest {
   @Size(min = 6)
   private String password;
 
-  @Pattern(
-    regexp = "^\\d{10}$",
-  message = "Phone number must contain exactly 10 digits")
-  @NotBlank private String phone;
+  @Pattern(regexp = "^\\d{10}$", message = "Phone number must contain exactly 10 digits")
+  @NotBlank
+  private String phone;
 
   public CreateUserRequest() {}
 

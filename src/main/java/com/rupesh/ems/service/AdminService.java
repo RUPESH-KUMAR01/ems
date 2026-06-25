@@ -6,6 +6,7 @@ import com.rupesh.ems.api.admin.req.CreateManagedUserRequest;
 import com.rupesh.ems.api.admin.req.UpdateUserRequest;
 import com.rupesh.ems.api.admin.res.AdminMessageResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
+import com.rupesh.ems.api.event.res.EventResponse;
 import com.rupesh.ems.api.team.res.TeamMembershipResponse;
 import com.rupesh.ems.api.team.res.TeamResponse;
 import com.rupesh.ems.auth.UserPrincipal;
@@ -13,6 +14,7 @@ import com.rupesh.ems.core.Team;
 import com.rupesh.ems.core.TeamMember;
 import com.rupesh.ems.core.TeamMembershipRequest;
 import com.rupesh.ems.core.User;
+import com.rupesh.ems.db.EventDao;
 import com.rupesh.ems.db.TeamDao;
 import com.rupesh.ems.db.TeamMemberDao;
 import com.rupesh.ems.db.TeamMembershipRequestDao;
@@ -28,16 +30,19 @@ public class AdminService {
   private final TeamDao teamDao;
   private final TeamMemberDao teamMemberDao;
   private final TeamMembershipRequestDao teamMembershipRequestDao;
+  private final EventDao eventDao;
 
   public AdminService(
       UserDao userDao,
       TeamDao teamDao,
       TeamMemberDao teamMemberDao,
-      TeamMembershipRequestDao teamMembershipRequestDao) {
+      TeamMembershipRequestDao teamMembershipRequestDao,
+    EventDao eventDao) {
     this.userDao = userDao;
     this.teamDao = teamDao;
     this.teamMemberDao = teamMemberDao;
     this.teamMembershipRequestDao = teamMembershipRequestDao;
+    this.eventDao=eventDao;
   }
 
   public UserResponse createUser(CreateManagedUserRequest request) {
@@ -226,5 +231,9 @@ public class AdminService {
 
   private Team getTeamOrThrow(Long teamId) {
     return teamDao.getTeamById(teamId).orElseThrow(() -> new NotFoundException("Team not found"));
+  }
+
+  public List<EventResponse> getAllEvents() {
+    return eventDao.getAllEvents().stream().map(EventResponse::new).toList();
   }
 }
