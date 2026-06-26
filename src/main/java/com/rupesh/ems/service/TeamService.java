@@ -24,8 +24,6 @@ import com.rupesh.ems.exceptions.NotFoundException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class TeamService {
   private final UserDao userDao;
@@ -83,10 +81,7 @@ public class TeamService {
   public List<TeamResponse> getTeamsForUser(UserPrincipal user) {
     ensureVerified(user);
 
-    return teamMemberDao.getTeamsByUserId(user.getId()).stream()
-        .map(teamMember -> getTeam(teamMember.getTeamId()))
-        .map(TeamResponse::new)
-        .toList();
+    return teamDao.getTeamsByUserId(user.getId()).stream().map(TeamResponse::new).toList();
   }
 
   public void deleteTeam(Long teamId, UserPrincipal user) {
@@ -248,14 +243,7 @@ public class TeamService {
   public List<TeamResponse> getTeamsCanJoin(UserPrincipal user) {
     ensureVerified(user);
 
-    Set<Long> userTeamIds =
-        teamMemberDao.getTeamsByUserId(user.getId()).stream()
-            .map(TeamMember::getTeamId)
-            .collect(Collectors.toSet());
-
-    return teamDao.findAll().stream()
-        .filter(team -> !userTeamIds.contains(team.getId()))
-        .filter(team -> teamMemberDao.countByTeamId(team.getId()) < team.getMaxMembers())
+    return teamDao.getJoinableTeamsForUser(user.getId()).stream()
         .map(TeamResponse::new)
         .toList();
   }
@@ -293,23 +281,12 @@ public class TeamService {
 
   public List<UserResponse> getTeamMembers(Long teamId, UserPrincipal user) {
     ensureVerified(user);
-    List<TeamMember> teamMembers = teamMemberDao.getUsersByTeamId(teamId);
-    teamMembers.stream()
-        .map(TeamMember::getUserId)
-        .map(userDao::getUserById)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .filter(u -> u.getId().equals(user.getId()))
-        .findFirst()
+
+    teamMemberDao
+        .findByTeamIdAndUserId(teamId, user.getId())
         .orElseThrow(() -> new NotFoundException("You are not a member of this team"));
 
-    return teamMembers.stream()
-        .map(TeamMember::getUserId)
-        .map(userDao::getUserById)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .map(UserResponse::new)
-        .toList();
+    return teamMemberDao.getUsersByTeamId(teamId).stream().map(UserResponse::new).toList();
   }
 
   private Team getTeam(Long teamId) {

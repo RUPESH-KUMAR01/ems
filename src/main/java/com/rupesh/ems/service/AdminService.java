@@ -23,7 +23,6 @@ import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.util.List;
-import java.util.Optional;
 
 public class AdminService {
   private final UserDao userDao;
@@ -164,10 +163,6 @@ public class AdminService {
     getTeamOrThrow(teamId);
 
     return teamMemberDao.getUsersByTeamId(teamId).stream()
-        .map(TeamMember::getUserId)
-        .map(userDao::getUserById)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
         .map(UserResponse::new)
         .toList();
   }

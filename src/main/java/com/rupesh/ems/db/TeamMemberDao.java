@@ -1,6 +1,7 @@
 package com.rupesh.ems.db;
 
 import com.rupesh.ems.core.TeamMember;
+import com.rupesh.ems.core.User;
 import io.dropwizard.hibernate.AbstractDAO;
 import java.util.List;
 import java.util.Optional;
@@ -23,9 +24,17 @@ public class TeamMemberDao extends AbstractDAO<TeamMember> {
         .getResultList();
   }
 
-  public List<TeamMember> getUsersByTeamId(Long teamId) {
+  public List<User> getUsersByTeamId(Long teamId) {
     return currentSession()
-        .createQuery("FROM TeamMember WHERE teamId = :teamId", TeamMember.class)
+        .createQuery(
+            """
+            SELECT u
+            FROM User u
+            JOIN TeamMember tm
+              ON tm.userId = u.id
+            WHERE tm.teamId = :teamId
+            """,
+            User.class)
         .setParameter("teamId", teamId)
         .getResultList();
   }

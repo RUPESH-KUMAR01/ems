@@ -51,4 +51,41 @@ public class TeamDao extends AbstractDAO<Team> {
       return false;
     }
   }
+
+  public List<Team> getTeamsByUserId(Long userId) {
+    return currentSession()
+        .createQuery(
+            """
+            SELECT t
+            FROM Team t
+            JOIN TeamMember tm
+              ON tm.teamId = t.id
+            WHERE tm.userId = :userId
+            """,
+            Team.class)
+        .setParameter("userId", userId)
+        .getResultList();
+  }
+
+  public List<Team> getJoinableTeamsForUser(Long userId) {
+    return currentSession()
+        .createQuery(
+            """
+            SELECT t
+            FROM Team t
+            LEFT JOIN TeamMember tm
+              ON tm.teamId = t.id
+            WHERE NOT EXISTS (
+              SELECT memberCheck.id
+              FROM TeamMember memberCheck
+              WHERE memberCheck.teamId = t.id
+                AND memberCheck.userId = :userId
+            )
+            GROUP BY t.id, t.name, t.ownerId, t.maxMembers, t.createdAt, t.updatedAt
+            HAVING COUNT(tm.id) < t.maxMembers
+            """,
+            Team.class)
+        .setParameter("userId", userId)
+        .getResultList();
+  }
 }
