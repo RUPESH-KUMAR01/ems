@@ -86,6 +86,11 @@
             <artifactId>jakarta.mail</artifactId>
             <version>2.0.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.razorpay</groupId>
+            <artifactId>razorpay-java</artifactId>
+            <version>1.4.9</version>
+        </dependency>
     </dependencies>
 
     <build>

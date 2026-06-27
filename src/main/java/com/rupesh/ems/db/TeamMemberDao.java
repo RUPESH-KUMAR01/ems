@@ -28,12 +28,12 @@ public class TeamMemberDao extends AbstractDAO<TeamMember> {
     return currentSession()
         .createQuery(
             """
-            SELECT u
-            FROM User u
-            JOIN TeamMember tm
-              ON tm.userId = u.id
-            WHERE tm.teamId = :teamId
-            """,
+                SELECT u
+                FROM User u
+                JOIN TeamMember tm
+                  ON tm.userId = u.id
+                WHERE tm.teamId = :teamId
+                """,
             User.class)
         .setParameter("teamId", teamId)
         .getResultList();
@@ -46,8 +46,14 @@ public class TeamMemberDao extends AbstractDAO<TeamMember> {
         .uniqueResult();
   }
 
-  public Optional<TeamMember> findByTeamIdAndUserId(Long teamId, Long userId) {
+  public List<TeamMember> findByTeamId(Long teamId) {
+    return currentSession()
+        .createQuery("FROM TeamMember WHERE teamId = :teamId", TeamMember.class)
+        .setParameter("teamId", teamId)
+        .getResultList();
+  }
 
+  public Optional<TeamMember> findByTeamIdAndUserId(Long teamId, Long userId) {
     return currentSession()
         .createQuery(
             "FROM TeamMember WHERE teamId = :teamId AND userId = :userId", TeamMember.class)

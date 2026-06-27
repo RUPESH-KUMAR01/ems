@@ -37,3 +37,7 @@ bootstrapadmin:
 emailservice:
   username: "admin@ems.com"
   password: "ems123@"
+
+razorpay:
+  keyId: "rzp_test_YOUR_KEY_ID"
+  keySecret: "YOUR_KEY_SECRET"
