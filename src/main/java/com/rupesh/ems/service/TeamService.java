@@ -23,7 +23,6 @@ import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 public class TeamService {
   private final UserDao userDao;
@@ -243,9 +242,7 @@ public class TeamService {
   public List<TeamResponse> getTeamsCanJoin(UserPrincipal user) {
     ensureVerified(user);
 
-    return teamDao.getJoinableTeamsForUser(user.getId()).stream()
-        .map(TeamResponse::new)
-        .toList();
+    return teamDao.getJoinableTeamsForUser(user.getId()).stream().map(TeamResponse::new).toList();
   }
 
   public TeamResponse transferOwnership(Long teamId, Long newOwnerId, UserPrincipal user) {

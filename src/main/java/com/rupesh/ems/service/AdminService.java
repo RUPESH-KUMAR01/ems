@@ -162,9 +162,7 @@ public class AdminService {
   public List<UserResponse> getTeamMembers(Long teamId) {
     getTeamOrThrow(teamId);
 
-    return teamMemberDao.getUsersByTeamId(teamId).stream()
-        .map(UserResponse::new)
-        .toList();
+    return teamMemberDao.getUsersByTeamId(teamId).stream().map(UserResponse::new).toList();
   }
 
   public List<TeamMembershipResponse> getTeamMembershipRequests(Long teamId) {
