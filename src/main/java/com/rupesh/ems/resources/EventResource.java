@@ -68,13 +68,6 @@ public class EventResource {
     return eventService.getVisibleEvents();
   }
 
-  @GET
-  @UnitOfWork
-  @Path("/all")
-  @RolesAllowed("MODERATOR")
-  public List<EventResponse> getAllEvents() {
-    return eventService.getAllEvents();
-  }
 
   @PUT
   @Path("/{eventId}/publish")

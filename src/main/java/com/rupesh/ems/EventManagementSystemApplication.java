@@ -18,12 +18,15 @@ import com.rupesh.ems.db.VerificationDao;
 import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
 import com.rupesh.ems.resources.EventResource;
+import com.rupesh.ems.resources.EventTeamResource;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
 import com.rupesh.ems.service.BootstrapAdminService;
 import com.rupesh.ems.service.Email.EmailService;
 import com.rupesh.ems.service.Email.SMTPEmailService;
 import com.rupesh.ems.service.EventService;
+import com.rupesh.ems.service.EventTeamRequestService;
+import com.rupesh.ems.service.EventTeamService;
 import com.rupesh.ems.service.JWTService;
 import com.rupesh.ems.service.Sms.ConsoleSmsService;
 import com.rupesh.ems.service.Sms.SmsService;
@@ -103,6 +106,10 @@ public class EventManagementSystemApplication
         new AdminService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao, eventDao);
 
     EventService eventService = new EventService(eventDao);
+    EventTeamService eventTeamService =
+        new EventTeamService(eventDao, teamDao, teamMemberDao, teamMembershipRequestDao);
+    EventTeamRequestService eventTeamRequestService =
+        new EventTeamRequestService(userDao, teamMembershipRequestDao, eventTeamService);
 
     JWTAuthenticator authenticator =
         proxyFactory.create(
@@ -126,5 +133,6 @@ public class EventManagementSystemApplication
     environment.jersey().register(new AuthResource(authService));
     environment.jersey().register(new AdminResource(adminService));
     environment.jersey().register(new EventResource(eventService));
+    environment.jersey().register(new EventTeamResource(eventTeamService, eventTeamRequestService));
   }
 }
