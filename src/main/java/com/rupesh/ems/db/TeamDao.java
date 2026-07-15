@@ -87,4 +87,17 @@ public class TeamDao extends AbstractDAO<Team> {
     currentSession().remove(team);
     return true;
   }
+
+  public List<Team> findByUserId(Long userId) {
+      return currentSession()
+          .createQuery("""
+              SELECT t
+              FROM Team t
+              JOIN TeamMember tm
+                ON tm.teamId = t.id
+              WHERE tm.userId = :userId
+              """, Team.class)
+          .setParameter("userId", userId)
+          .getResultList();
+  }
 }

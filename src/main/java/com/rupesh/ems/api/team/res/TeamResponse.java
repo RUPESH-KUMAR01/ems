@@ -8,6 +8,7 @@ public class TeamResponse {
   private Long id;
   private String name;
   private Long ownerId;
+  private Long eventId;
   private Instant createdAt;
   private Instant updatedAt;
 
@@ -17,11 +18,13 @@ public class TeamResponse {
       Long id,
       String name,
       Long ownerId,
+      Long eventId,
       Instant createdAt,
       Instant updatedAt) {
     this.id = id;
     this.name = name;
     this.ownerId = ownerId;
+    this.eventId = eventId;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -30,6 +33,7 @@ public class TeamResponse {
     this.id = team.getId();
     this.name = team.getName();
     this.ownerId = team.getOwnerId();
+    this.eventId = team.getEventId();
     this.createdAt = team.getCreatedAt();
     this.updatedAt = team.getUpdatedAt();
   }
@@ -72,5 +76,13 @@ public class TeamResponse {
 
   public void setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
+  }
+
+  public Long getEventId() {
+    return eventId;
+  }
+
+  public void setEventId(Long eventId) {
+    this.eventId = eventId;
   }
 }
