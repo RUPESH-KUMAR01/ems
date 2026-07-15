@@ -14,7 +14,7 @@ import java.time.Instant;
 @Entity
 @Table(
     name = "teams",
-    uniqueConstraints = {@UniqueConstraint(columnNames = {"owner_id", "name"})})
+    uniqueConstraints = {@UniqueConstraint(columnNames = {"event_id", "name"})})
 public class Team {
 
   @Id
@@ -27,8 +27,8 @@ public class Team {
   @Column(name = "owner_id", nullable = false)
   private Long ownerId;
 
-  @Column(name = "max_members", nullable = false, columnDefinition = "integer default 1")
-  private Integer maxMembers = 1;
+  @Column(name ="event_id", nullable = false)
+  private Long eventId;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -38,15 +38,10 @@ public class Team {
 
   public Team() {}
 
-  public Team(String name, Long ownerId) {
+  public Team(Long eventId, String name, Long ownerId) {
+    this.eventId = eventId;
     this.name = name;
     this.ownerId = ownerId;
-  }
-
-  public Team(String name, Long ownerId, Integer maxMembers) {
-    this.name = name;
-    this.ownerId = ownerId;
-    this.maxMembers = maxMembers;
   }
 
   public Long getId() {
@@ -69,12 +64,8 @@ public class Team {
     this.ownerId = ownerId;
   }
 
-  public Integer getMaxMembers() {
-    return maxMembers;
-  }
-
-  public void setMaxMembers(Integer maxMembers) {
-    this.maxMembers = maxMembers;
+  public Long getEventId() {
+    return eventId;
   }
 
   public Instant getCreatedAt() {

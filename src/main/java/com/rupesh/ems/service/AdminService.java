@@ -151,9 +151,6 @@ public class AdminService {
     return new UserResponse(user);
   }
 
-  public List<TeamResponse> getAllTeams() {
-    return teamDao.findAll().stream().map(TeamResponse::new).toList();
-  }
 
   public TeamResponse getTeamById(Long teamId) {
     return new TeamResponse(getTeamOrThrow(teamId));

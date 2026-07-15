@@ -20,72 +20,71 @@ public class TeamDao extends AbstractDAO<Team> {
     return currentSession().merge(team);
   }
 
-  public List<Team> findAll() {
-    return currentSession().createQuery("FROM Team", Team.class).getResultList();
+  public Optional<Team> getTeamById(Long teamId) {
+    return Optional.ofNullable(get(teamId));
   }
 
-  public Optional<Team> getTeamById(Long id) {
-    return Optional.ofNullable(get(id));
-  }
-
-  public List<Team> findByOwnerId(Long ownerId) {
+  public Optional<Team> findByEventIdAndTeamId(Long eventId, Long teamId) {
     return currentSession()
-        .createQuery("FROM Team WHERE ownerId = :ownerId", Team.class)
-        .setParameter("ownerId", ownerId)
+        .createQuery(
+            """
+            FROM Team
+            WHERE id = :teamId
+              AND eventId = :eventId
+            """,
+            Team.class)
+        .setParameter("teamId", teamId)
+        .setParameter("eventId", eventId)
+        .uniqueResultOptional();
+  }
+
+  public List<Team> findByEventId(Long eventId) {
+    return currentSession()
+        .createQuery(
+            """
+            FROM Team
+            WHERE eventId = :eventId
+            ORDER BY createdAt
+            """,
+            Team.class)
+        .setParameter("eventId", eventId)
         .getResultList();
   }
 
-  public Optional<Team> findByOwnerIdAndName(Long ownerId, String name) {
+  public Optional<Team> findByEventIdAndName(Long eventId, String name) {
     return currentSession()
-        .createQuery("FROM Team WHERE ownerId = :ownerId AND name = :name", Team.class)
-        .setParameter("ownerId", ownerId)
+        .createQuery(
+            """
+            FROM Team
+            WHERE eventId = :eventId
+              AND name = :name
+            """,
+            Team.class)
+        .setParameter("eventId", eventId)
         .setParameter("name", name)
         .uniqueResultOptional();
   }
 
+  public Optional<Team> findByEventIdAndOwnerId(Long eventId, Long ownerId) {
+    return currentSession()
+        .createQuery(
+            """
+            FROM Team
+            WHERE eventId = :eventId
+              AND ownerId = :ownerId
+            """,
+            Team.class)
+        .setParameter("eventId", eventId)
+        .setParameter("ownerId", ownerId)
+        .uniqueResultOptional();
+  }
+
   public boolean delete(Team team) {
-    if (team != null) {
-      currentSession().remove(team);
-      return true;
-    } else {
+    if (team == null) {
       return false;
     }
-  }
 
-  public List<Team> getTeamsByUserId(Long userId) {
-    return currentSession()
-        .createQuery(
-            """
-            SELECT t
-            FROM Team t
-            JOIN TeamMember tm
-              ON tm.teamId = t.id
-            WHERE tm.userId = :userId
-            """,
-            Team.class)
-        .setParameter("userId", userId)
-        .getResultList();
-  }
-
-  public List<Team> getJoinableTeamsForUser(Long userId) {
-    return currentSession()
-        .createQuery(
-            """
-            SELECT t
-            FROM Team t
-            LEFT JOIN TeamMember tm
-              ON tm.teamId = t.id
-            WHERE NOT EXISTS (
-              SELECT memberCheck.id
-              FROM TeamMember memberCheck
-              WHERE memberCheck.teamId = t.id
-                AND memberCheck.userId = :userId
-            )
-            GROUP BY t.id, t.name, t.ownerId, t.maxMembers, t.createdAt, t.updatedAt
-            HAVING COUNT(tm.id) < t.maxMembers
-            """,
-            Team.class)
-        .setParameter("userId", userId)
-        .getResultList();
+    currentSession().remove(team);
+    return true;
   }
 }

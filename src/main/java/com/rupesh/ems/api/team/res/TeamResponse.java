@@ -8,7 +8,6 @@ public class TeamResponse {
   private Long id;
   private String name;
   private Long ownerId;
-  private Integer maxMembers;
   private Instant createdAt;
   private Instant updatedAt;
 
@@ -18,13 +17,11 @@ public class TeamResponse {
       Long id,
       String name,
       Long ownerId,
-      Integer maxMembers,
       Instant createdAt,
       Instant updatedAt) {
     this.id = id;
     this.name = name;
     this.ownerId = ownerId;
-    this.maxMembers = maxMembers;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -33,7 +30,6 @@ public class TeamResponse {
     this.id = team.getId();
     this.name = team.getName();
     this.ownerId = team.getOwnerId();
-    this.maxMembers = team.getMaxMembers();
     this.createdAt = team.getCreatedAt();
     this.updatedAt = team.getUpdatedAt();
   }
@@ -60,14 +56,6 @@ public class TeamResponse {
 
   public void setOwnerId(Long ownerId) {
     this.ownerId = ownerId;
-  }
-
-  public Integer getMaxMembers() {
-    return maxMembers;
-  }
-
-  public void setMaxMembers(Integer maxMembers) {
-    this.maxMembers = maxMembers;
   }
 
   public Instant getCreatedAt() {

@@ -18,7 +18,6 @@ import com.rupesh.ems.db.VerificationDao;
 import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
 import com.rupesh.ems.resources.EventResource;
-import com.rupesh.ems.resources.TeamResource;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
 import com.rupesh.ems.service.BootstrapAdminService;
@@ -28,7 +27,6 @@ import com.rupesh.ems.service.EventService;
 import com.rupesh.ems.service.JWTService;
 import com.rupesh.ems.service.Sms.ConsoleSmsService;
 import com.rupesh.ems.service.Sms.SmsService;
-import com.rupesh.ems.service.TeamService;
 import com.rupesh.ems.service.VerificationService;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
@@ -103,8 +101,6 @@ public class EventManagementSystemApplication
     AuthService authService = new AuthService(userDao, jwtService, verificationService);
     AdminService adminService =
         new AdminService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao, eventDao);
-    TeamService teamService =
-        new TeamService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao);
 
     EventService eventService = new EventService(eventDao);
 
@@ -129,7 +125,6 @@ public class EventManagementSystemApplication
     environment.jersey().register(RolesAllowedDynamicFeature.class);
     environment.jersey().register(new AuthResource(authService));
     environment.jersey().register(new AdminResource(adminService));
-    environment.jersey().register(new TeamResource(teamService));
     environment.jersey().register(new EventResource(eventService));
   }
 }
