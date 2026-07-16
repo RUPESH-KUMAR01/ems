@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: EMS Moderator API
+  version: 1.0.0
+  description: Endpoints for MODERATOR event management flows.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: events-public
+  - name: events-moderator
+paths:
+  /api/events:
+    get:
+      tags: [events-public]
+      summary: List visible events
+    post:
+      tags: [events-moderator]
+      summary: Create event
+      security:
+        - bearerAuth: []
+  /api/events/me:
+    get:
+      tags: [events-moderator]
+      summary: List events created by current moderator
+      security:
+        - bearerAuth: []
+  /api/events/{eventId}:
+    get:
+      tags: [events-public]
+      summary: Get event by id
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+    put:
+      tags: [events-moderator]
+      summary: Update event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+    delete:
+      tags: [events-moderator]
+      summary: Delete event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/publish:
+    put:
+      tags: [events-moderator]
+      summary: Publish event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/cancel:
+    put:
+      tags: [events-moderator]
+      summary: Cancel event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/complete:
+    put:
+      tags: [events-moderator]
+      summary: Complete event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

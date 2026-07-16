@@ -1,0 +1,170 @@
+openapi: 3.0.3
+info:
+  title: EMS Admin API
+  version: 1.0.0
+  description: Endpoints accessible to ADMIN users.
+servers:
+  - url: http://localhost:8080
+security:
+  - bearerAuth: []
+tags:
+  - name: admin-users
+  - name: admin-teams
+  - name: admin-events
+paths:
+  /api/admin/users:
+    get:
+      tags: [admin-users]
+      summary: List all users
+    post:
+      tags: [admin-users]
+      summary: Create managed user
+  /api/admin/users/{id}:
+    get:
+      tags: [admin-users]
+      summary: Get user by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+    put:
+      tags: [admin-users]
+      summary: Update user
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+    delete:
+      tags: [admin-users]
+      summary: Delete user
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/admin/users/{id}/role:
+    put:
+      tags: [admin-users]
+      summary: Change user role
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/admin/users/search/email:
+    get:
+      tags: [admin-users]
+      summary: Search user by email
+      parameters:
+        - in: query
+          name: email
+          required: true
+          schema:
+            type: string
+  /api/admin/users/search/phone:
+    get:
+      tags: [admin-users]
+      summary: Search user by phone
+      parameters:
+        - in: query
+          name: phone
+          required: true
+          schema:
+            type: string
+  /api/admin/teams/{teamId}:
+    get:
+      tags: [admin-teams]
+      summary: Get team by id
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+    delete:
+      tags: [admin-teams]
+      summary: Delete team
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/admin/teams/{teamId}/members:
+    get:
+      tags: [admin-teams]
+      summary: List team members
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/admin/teams/{teamId}/requests:
+    get:
+      tags: [admin-teams]
+      summary: List team membership requests
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/admin/teams/{teamId}/owner/{userId}:
+    put:
+      tags: [admin-teams]
+      summary: Transfer team ownership
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/admin/teams/{teamId}/members/{userId}:
+    delete:
+      tags: [admin-teams]
+      summary: Remove user from team
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/admin/events:
+    get:
+      tags: [admin-events]
+      summary: List all events
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

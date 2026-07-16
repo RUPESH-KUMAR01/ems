@@ -88,6 +88,13 @@ Runs Spotless formatting, compile, tests, Checkstyle, and PMD.
 | Webhooks | `/webhooks/razorpay` | Razorpay payment webhooks |
 | Admin | `/api/admin` | user & team management (ADMIN only) |
 
+### Swagger / OpenAPI Docs
+
+- Swagger home: `http://localhost:8080/swagger`
+- Admin docs: `http://localhost:8080/swagger/admin`
+- Moderator docs: `http://localhost:8080/swagger/moderator`
+- User docs: `http://localhost:8080/swagger/user`
+
 ## Project Structure
 ```
 src/main/java/com/rupesh/ems/

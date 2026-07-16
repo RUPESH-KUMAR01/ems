@@ -19,6 +19,7 @@ import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
 import com.rupesh.ems.resources.EventResource;
 import com.rupesh.ems.resources.EventTeamResource;
+import com.rupesh.ems.resources.SwaggerDocsResource;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
 import com.rupesh.ems.service.BootstrapAdminService;
@@ -134,5 +135,6 @@ public class EventManagementSystemApplication
     environment.jersey().register(new AdminResource(adminService));
     environment.jersey().register(new EventResource(eventService));
     environment.jersey().register(new EventTeamResource(eventTeamService, eventTeamRequestService));
+    environment.jersey().register(new SwaggerDocsResource());
   }
 }

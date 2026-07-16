@@ -1,0 +1,374 @@
+openapi: 3.0.3
+info:
+  title: EMS User API
+  version: 1.0.0
+  description: Endpoints for USER authentication, events, and teams.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: auth
+  - name: events
+  - name: teams
+paths:
+  /api/auth/register:
+    post:
+      tags: [auth]
+      summary: Register new user
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Login user
+  /api/auth/verify-email:
+    post:
+      tags: [auth]
+      summary: Verify email OTP
+      security:
+        - bearerAuth: []
+  /api/auth/verify-phone:
+    post:
+      tags: [auth]
+      summary: Verify phone OTP
+      security:
+        - bearerAuth: []
+  /api/auth/generate-email-otp:
+    post:
+      tags: [auth]
+      summary: Generate email OTP
+      security:
+        - bearerAuth: []
+  /api/auth/generate-phone-otp:
+    post:
+      tags: [auth]
+      summary: Generate phone OTP
+      security:
+        - bearerAuth: []
+  /api/auth/me:
+    get:
+      tags: [auth]
+      summary: Get current user
+      security:
+        - bearerAuth: []
+  /api/events:
+    get:
+      tags: [events]
+      summary: List visible events
+  /api/events/{eventId}:
+    get:
+      tags: [events]
+      summary: Get event by id
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/teams:
+    get:
+      tags: [teams]
+      summary: List teams for event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+    post:
+      tags: [teams]
+      summary: Create team
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/teams/me:
+    get:
+      tags: [teams]
+      summary: List current user teams
+      security:
+        - bearerAuth: []
+  /api/team-requests/me:
+    get:
+      tags: [teams]
+      summary: List current user pending team requests
+      security:
+        - bearerAuth: []
+  /api/events/{eventId}/teams/{teamId}:
+    get:
+      tags: [teams]
+      summary: Get team by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+    put:
+      tags: [teams]
+      summary: Update team
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+    delete:
+      tags: [teams]
+      summary: Delete team
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/teams/{teamId}/members:
+    get:
+      tags: [teams]
+      summary: List team members
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/teams/{teamId}/members/{userId}:
+    delete:
+      tags: [teams]
+      summary: Remove user from team
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/teams/{teamId}/owner/{userId}:
+    put:
+      tags: [teams]
+      summary: Transfer team ownership
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/teams/{teamId}/requests:
+    get:
+      tags: [teams]
+      summary: List team requests
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+    post:
+      tags: [teams]
+      summary: Request to join team
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+    delete:
+      tags: [teams]
+      summary: Delete own join request
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/teams/{teamId}/requests/{userId}:
+    put:
+      tags: [teams]
+      summary: Accept or reject team request
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/teams/{teamId}/invitations:
+    post:
+      tags: [teams]
+      summary: Invite user to team
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+    put:
+      tags: [teams]
+      summary: Accept or reject invitation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+  /api/events/{eventId}/teams/{teamId}/invitations/{userId}:
+    delete:
+      tags: [teams]
+      summary: Delete invitation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: teamId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            format: int64
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
