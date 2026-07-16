@@ -2,105 +2,343 @@ openapi: 3.0.3
 info:
   title: EMS Moderator API
   version: 1.0.0
-  description: Endpoints for MODERATOR event management flows.
+  description: Endpoints for MODERATOR event creation, updates, lifecycle transitions, and owned event listings.
 servers:
   - url: http://localhost:8080
 tags:
   - name: events-public
+    description: Public event discovery.
   - name: events-moderator
+    description: Moderator event management.
 paths:
   /api/events:
     get:
       tags: [events-public]
-      summary: List visible events
+      summary: List public visible events
+      operationId: moderatorListVisibleEvents
+      responses:
+        '200':
+          description: Public published events.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
     post:
       tags: [events-moderator]
       summary: Create event
+      operationId: createEvent
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventRequest'
+      responses:
+        '200':
+          description: Event created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
   /api/events/me:
     get:
       tags: [events-moderator]
       summary: List events created by current moderator
+      operationId: listMyEvents
       security:
         - bearerAuth: []
+      responses:
+        '200':
+          description: Events created by the current moderator.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
   /api/events/{eventId}:
     get:
       tags: [events-public]
-      summary: Get event by id
+      summary: Get public event by id
+      operationId: moderatorGetEventById
       parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Event details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
     put:
       tags: [events-moderator]
       summary: Update event
+      operationId: updateEvent
       security:
         - bearerAuth: []
       parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEventRequest'
+      responses:
+        '200':
+          description: Event updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
     delete:
       tags: [events-moderator]
       summary: Delete event
+      operationId: deleteEvent
       security:
         - bearerAuth: []
       parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '204':
+          description: Event deleted.
+        default:
+          $ref: '#/components/responses/Error'
   /api/events/{eventId}/publish:
     put:
       tags: [events-moderator]
       summary: Publish event
+      operationId: publishEvent
       security:
         - bearerAuth: []
       parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Event published.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
   /api/events/{eventId}/cancel:
     put:
       tags: [events-moderator]
       summary: Cancel event
+      operationId: cancelEvent
       security:
         - bearerAuth: []
       parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Event cancelled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
   /api/events/{eventId}/complete:
     put:
       tags: [events-moderator]
       summary: Complete event
+      operationId: completeEvent
       security:
         - bearerAuth: []
       parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Event completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  parameters:
+    EventId:
+      in: path
+      name: eventId
+      required: true
+      schema:
+        type: integer
+        format: int64
+  responses:
+    Error:
+      description: Error response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+  schemas:
+    EventType:
+      type: string
+      enum: [SOLO, TEAM]
+    EventVisibility:
+      type: string
+      enum: [PRIVATE, PUBLIC]
+    EventStatus:
+      type: string
+      enum: [DRAFT, PUBLISHED, COMPLETED, CANCELLED]
+    CreateEventRequest:
+      type: object
+      required: [name, description, type, maxParticipants, registrationFee, registrationDeadline]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          $ref: '#/components/schemas/EventType'
+        visibility:
+          $ref: '#/components/schemas/EventVisibility'
+        maxParticipants:
+          type: integer
+          minimum: 1
+        minTeamSize:
+          type: integer
+          minimum: 1
+          nullable: true
+        maxTeamSize:
+          type: integer
+          minimum: 1
+          nullable: true
+        registrationFee:
+          type: number
+          format: double
+          minimum: 0
+          default: 0
+        registrationDeadline:
+          type: string
+          format: date-time
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+    UpdateEventRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          $ref: '#/components/schemas/EventType'
+        visibility:
+          $ref: '#/components/schemas/EventVisibility'
+        status:
+          $ref: '#/components/schemas/EventStatus'
+        maxParticipants:
+          type: integer
+          minimum: 1
+        minTeamSize:
+          type: integer
+          minimum: 1
+          nullable: true
+        maxTeamSize:
+          type: integer
+          minimum: 1
+          nullable: true
+        registrationFee:
+          type: number
+          format: double
+          minimum: 0
+        registrationDeadline:
+          type: string
+          format: date-time
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+    EventResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        createdBy:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/EventType'
+        visibility:
+          $ref: '#/components/schemas/EventVisibility'
+        status:
+          $ref: '#/components/schemas/EventStatus'
+        maxParticipants:
+          type: integer
+          minimum: 1
+        minTeamSize:
+          type: integer
+          minimum: 1
+          nullable: true
+        maxTeamSize:
+          type: integer
+          minimum: 1
+          nullable: true
+        registrationFee:
+          type: number
+          format: double
+          minimum: 0
+        registrationDeadline:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    ApiErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+          nullable: true
+        details:
+          type: array
+          items:
+            type: string
