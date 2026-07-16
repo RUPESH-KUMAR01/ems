@@ -7,6 +7,8 @@ public class RazorpayConfig {
   @NotBlank private String keyId;
 
   @NotBlank private String keySecret;
+  
+  @NotBlank private String webhookSecret;
 
   public RazorpayConfig() {}
 
@@ -24,5 +26,13 @@ public class RazorpayConfig {
 
   public void setKeySecret(String keySecret) {
     this.keySecret = keySecret;
+  }
+
+  public String getWebhookSecret() {
+    return webhookSecret;
+  }
+
+  public void setWebhookSecret(String webhookSecret) {
+    this.webhookSecret = webhookSecret;
   }
 }

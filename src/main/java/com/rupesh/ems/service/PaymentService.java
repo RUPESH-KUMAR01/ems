@@ -17,6 +17,7 @@ import com.rupesh.ems.db.EventRegistrationDao;
 import com.rupesh.ems.db.PaymentDao;
 import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
+import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.InternalServerException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.math.BigDecimal;
@@ -25,12 +26,16 @@ import org.json.JSONObject;
 
 public class PaymentService {
 
+  private static final String EVENT_PAYMENT_CAPTURED = "payment.captured";
+  private static final String EVENT_PAYMENT_FAILED = "payment.failed";
+
   private final PaymentDao paymentDao;
   private final EventRegistrationDao registrationDao;
   private final EventDao eventDao;
   private final RazorpayClient razorpayClient;
   private final String razorpayKeyId;
   private final String razorpayKeySecret;
+  private final String webhookSecret;
 
   public PaymentService(
       PaymentDao paymentDao,
@@ -42,6 +47,7 @@ public class PaymentService {
     this.eventDao = eventDao;
     this.razorpayKeyId = razorpayConfig.getKeyId();
     this.razorpayKeySecret = razorpayConfig.getKeySecret();
+    this.webhookSecret = razorpayConfig.getWebhookSecret();
 
     try {
       this.razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
@@ -137,20 +143,7 @@ public class PaymentService {
       throw new BadRequestException("Payment verification failed: " + e.getMessage());
     }
 
-    // Mark payment as completed
-    payment.setProviderPaymentId(razorpayPaymentId);
-    payment.setStatus(PaymentStatus.COMPLETED);
-    payment.setPaidAt(Instant.now());
-    payment = paymentDao.update(payment);
-
-    // Update registration status to REGISTERED
-    registrationDao
-        .getById(payment.getRegistrationId())
-        .ifPresent(
-            registration -> {
-              registration.setStatus(RegistrationStatus.REGISTERED);
-              registrationDao.update(registration);
-            });
+    payment = completePayment(payment, razorpayPaymentId);
 
     return new PaymentResponse(payment);
   }
@@ -176,5 +169,92 @@ public class PaymentService {
             .orElseThrow(() -> new NotFoundException("Payment not found for this registration"));
 
     return new PaymentResponse(payment);
+  }
+
+  public void handleWebhook(String payload, String signature) {
+
+    if (signature == null || signature.isBlank()) {
+      throw new ForbiddenException("Invalid webhook signature");
+    }
+
+    try {
+      Utils.verifyWebhookSignature(payload, signature, webhookSecret);
+    } catch (RazorpayException e) {
+      throw new ForbiddenException("Invalid webhook signature");
+    }
+
+    JSONObject event = new JSONObject(payload);
+
+    switch (event.getString("event")) {
+
+      case EVENT_PAYMENT_CAPTURED -> handlePaymentCaptured(event);
+
+      case EVENT_PAYMENT_FAILED -> handlePaymentFailed(event);
+
+      default -> {
+        // Ignore unsupported events
+      }
+    }
+  }
+
+  private void handlePaymentCaptured(JSONObject event) {
+
+    JSONObject paymentEntity = extractPaymentEntity(event);
+    String orderId = paymentEntity.getString("order_id");
+    String paymentId = paymentEntity.getString("id");
+
+    Payment payment = findPaymentByProviderOrderId(orderId);
+
+    if (payment.getStatus() == PaymentStatus.COMPLETED) {
+      return;
+    }
+
+    completePayment(payment, paymentId);
+  }
+
+  private void handlePaymentFailed(JSONObject event) {
+
+    JSONObject paymentEntity = extractPaymentEntity(event);
+    String orderId = paymentEntity.getString("order_id");
+
+    Payment payment = findPaymentByProviderOrderId(orderId);
+
+    if (payment.getStatus() == PaymentStatus.COMPLETED) {
+      return;
+    }
+
+    payment.setStatus(PaymentStatus.FAILED);
+    paymentDao.update(payment);
+  }
+
+  private Payment completePayment(Payment payment, String providerPaymentId) {
+
+    payment.setProviderPaymentId(providerPaymentId);
+    payment.setStatus(PaymentStatus.COMPLETED);
+    payment.setPaidAt(Instant.now());
+
+    payment = paymentDao.update(payment);
+
+    EventRegistration registration =
+        registrationDao
+            .getById(payment.getRegistrationId())
+            .orElseThrow(() -> new NotFoundException("Registration not found"));
+
+    registration.setStatus(RegistrationStatus.REGISTERED);
+    registrationDao.update(registration);
+
+    return payment;
+  }
+
+  private Payment findPaymentByProviderOrderId(String orderId) {
+
+    return paymentDao
+        .findByProviderOrderId(orderId)
+        .orElseThrow(() -> new NotFoundException("Payment not found"));
+  }
+
+  private JSONObject extractPaymentEntity(JSONObject event) {
+
+    return event.getJSONObject("payload").getJSONObject("payment").getJSONObject("entity");
   }
 }

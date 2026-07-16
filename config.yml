@@ -41,3 +41,4 @@ emailservice:
 razorpay:
   keyId: "rzp_test_YOUR_KEY_ID"
   keySecret: "YOUR_KEY_SECRET"
+  webhookSecret: "YOUR_WEBHOOK_SECRET"
