@@ -4,12 +4,16 @@ import com.rupesh.ems.auth.JWTAuthenticator;
 import com.rupesh.ems.auth.RoleAuthorizer;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.core.Event;
+import com.rupesh.ems.core.EventRegistration;
+import com.rupesh.ems.core.Payment;
 import com.rupesh.ems.core.Team;
 import com.rupesh.ems.core.TeamMember;
 import com.rupesh.ems.core.TeamMembershipRequest;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.core.VerificationCode;
 import com.rupesh.ems.db.EventDao;
+import com.rupesh.ems.db.EventRegistrationDao;
+import com.rupesh.ems.db.PaymentDao;
 import com.rupesh.ems.db.TeamDao;
 import com.rupesh.ems.db.TeamMemberDao;
 import com.rupesh.ems.db.TeamMembershipRequestDao;
@@ -17,16 +21,21 @@ import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.db.VerificationDao;
 import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
+import com.rupesh.ems.resources.EventRegistrationResource;
 import com.rupesh.ems.resources.EventResource;
 import com.rupesh.ems.resources.EventTeamResource;
+import com.rupesh.ems.resources.PaymentResource;
 import com.rupesh.ems.resources.SwaggerDocsResource;
+import com.rupesh.ems.resources.WebhookResource;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
 import com.rupesh.ems.service.BootstrapAdminService;
+import com.rupesh.ems.service.EventRegistrationService;
 import com.rupesh.ems.service.EventService;
 import com.rupesh.ems.service.EventTeamRequestService;
 import com.rupesh.ems.service.EventTeamService;
 import com.rupesh.ems.service.JWTService;
+import com.rupesh.ems.service.PaymentService;
 import com.rupesh.ems.service.VerificationService;
 import com.rupesh.ems.service.email.EmailService;
 import com.rupesh.ems.service.email.SMTPEmailService;
@@ -54,7 +63,9 @@ public class EventManagementSystemApplication
           Team.class,
           TeamMember.class,
           TeamMembershipRequest.class,
-          Event.class) {
+          Event.class,
+          EventRegistration.class,
+          Payment.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(
             EventManagementSystemConfiguration configuration) {
@@ -89,6 +100,8 @@ public class EventManagementSystemApplication
     TeamMembershipRequestDao teamMembershipRequestDao =
         new TeamMembershipRequestDao(sessionFactory);
     EventDao eventDao = new EventDao(sessionFactory);
+    EventRegistrationDao eventRegistrationDao = new EventRegistrationDao(sessionFactory);
+    PaymentDao paymentDao = new PaymentDao(sessionFactory);
 
     UnitOfWorkAwareProxyFactory proxyFactory = new UnitOfWorkAwareProxyFactory(hibernateBundle);
 
@@ -111,6 +124,11 @@ public class EventManagementSystemApplication
         new EventTeamService(eventDao, teamDao, teamMemberDao, teamMembershipRequestDao);
     EventTeamRequestService eventTeamRequestService =
         new EventTeamRequestService(userDao, teamMembershipRequestDao, eventTeamService);
+    EventRegistrationService eventRegistrationService =
+        new EventRegistrationService(eventDao, teamDao, eventRegistrationDao);
+    PaymentService paymentService =
+        new PaymentService(
+            paymentDao, eventRegistrationDao, eventDao, configuration.getRazorpayConfig());
 
     JWTAuthenticator authenticator =
         proxyFactory.create(
@@ -135,6 +153,9 @@ public class EventManagementSystemApplication
     environment.jersey().register(new AdminResource(adminService));
     environment.jersey().register(new EventResource(eventService));
     environment.jersey().register(new EventTeamResource(eventTeamService, eventTeamRequestService));
+    environment.jersey().register(new EventRegistrationResource(eventRegistrationService));
+    environment.jersey().register(new PaymentResource(paymentService));
+    environment.jersey().register(new WebhookResource(paymentService));
     environment.jersey().register(new SwaggerDocsResource());
   }
 }
