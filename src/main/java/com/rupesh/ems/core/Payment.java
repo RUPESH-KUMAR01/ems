@@ -36,10 +36,7 @@ public class Payment {
 
   public Payment() {}
 
-  public Payment(
-      Long registrationId,
-      BigDecimal amount,
-      String providerOrderId) {
+  public Payment(Long registrationId, BigDecimal amount, String providerOrderId) {
     this.registrationId = registrationId;
     this.amount = amount;
     this.providerOrderId = providerOrderId;
