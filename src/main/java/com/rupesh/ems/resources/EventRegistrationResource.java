@@ -30,18 +30,14 @@ public class EventRegistrationResource {
       @Valid RegisterEventRequest request,
       @Auth UserPrincipal user) {
 
-    return registrationService.register(
-        eventId,
-        request.getTeamId(),
-        user);
+    return registrationService.register(eventId, request.getTeamId(), user);
   }
 
   @DELETE
   @Path("/{registrationId}")
   @UnitOfWork
   public void cancelRegistration(
-      @PathParam("registrationId") Long registrationId,
-      @Auth UserPrincipal user) {
+      @PathParam("registrationId") Long registrationId, @Auth UserPrincipal user) {
 
     registrationService.cancel(registrationId);
   }

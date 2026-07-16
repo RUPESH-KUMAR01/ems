@@ -103,8 +103,7 @@ public class PaymentService {
       Payment payment = new Payment(registrationId, fee, razorpayOrderId);
       payment = paymentDao.create(payment);
 
-      return new CreateOrderResponse(
-          payment.getId(), razorpayOrderId, fee, "INR", razorpayKeyId);
+      return new CreateOrderResponse(payment.getId(), razorpayOrderId, fee, "INR", razorpayKeyId);
 
     } catch (RazorpayException e) {
       throw new InternalServerException("Failed to create Razorpay order: " + e.getMessage());
@@ -186,7 +185,6 @@ public class PaymentService {
     JSONObject event = new JSONObject(payload);
 
     switch (event.getString("event")) {
-
       case EVENT_PAYMENT_CAPTURED -> handlePaymentCaptured(event);
 
       case EVENT_PAYMENT_FAILED -> handlePaymentFailed(event);

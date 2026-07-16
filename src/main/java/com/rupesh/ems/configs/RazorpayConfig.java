@@ -7,7 +7,7 @@ public class RazorpayConfig {
   @NotBlank private String keyId;
 
   @NotBlank private String keySecret;
-  
+
   @NotBlank private String webhookSecret;
 
   public RazorpayConfig() {}

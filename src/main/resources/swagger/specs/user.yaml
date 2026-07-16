@@ -1,0 +1,1049 @@
+openapi: 3.0.3
+info:
+  title: EMS User API
+  version: 1.0.0
+  description: Endpoints for user authentication, public event discovery, event registrations, teams, payments, and Razorpay webhooks.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: auth
+    description: Authentication and verification flows.
+  - name: events
+    description: Public event discovery.
+  - name: registrations
+    description: Event registration flows.
+  - name: teams
+    description: Team creation, membership, requests, and invitations.
+  - name: payments
+    description: Razorpay order, verification, and lookup flows.
+  - name: webhooks
+    description: External payment provider callbacks.
+  - name: swagger
+    description: Swagger UI and OpenAPI document endpoints.
+paths:
+  /api/auth/register:
+    post:
+      tags: [auth]
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '200':
+          description: User registered and JWT issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Login user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful and JWT issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/auth/verify-email:
+    post:
+      tags: [auth]
+      summary: Verify current user's email OTP
+      operationId: verifyEmail
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OtpVerifyRequest'
+      responses:
+        '204':
+          description: Email verified.
+        default:
+          $ref: '#/components/responses/Error'
+  /api/auth/verify-phone:
+    post:
+      tags: [auth]
+      summary: Verify current user's phone OTP
+      operationId: verifyPhone
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OtpVerifyRequest'
+      responses:
+        '204':
+          description: Phone verified.
+        default:
+          $ref: '#/components/responses/Error'
+  /api/auth/generate-email-otp:
+    post:
+      tags: [auth]
+      summary: Generate an email OTP for the current user
+      operationId: generateEmailOtp
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Email OTP generated.
+        default:
+          $ref: '#/components/responses/Error'
+  /api/auth/generate-phone-otp:
+    post:
+      tags: [auth]
+      summary: Generate a phone OTP for the current user
+      operationId: generatePhoneOtp
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Phone OTP generated.
+        default:
+          $ref: '#/components/responses/Error'
+  /api/auth/me:
+    get:
+      tags: [auth]
+      summary: Get current user
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events:
+    get:
+      tags: [events]
+      summary: List public visible events
+      operationId: listVisibleEvents
+      responses:
+        '200':
+          description: Public published events.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}:
+    get:
+      tags: [events]
+      summary: Get public event by id
+      operationId: getEventById
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Event details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/registrations:
+    post:
+      tags: [registrations]
+      summary: Register current user or team for an event
+      operationId: registerForEvent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterEventRequest'
+      responses:
+        '200':
+          description: Registration created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventRegistrationResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/registrations/{registrationId}:
+    delete:
+      tags: [registrations]
+      summary: Cancel an event registration
+      operationId: cancelEventRegistration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/RegistrationId'
+      responses:
+        '204':
+          description: Registration cancelled.
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/teams:
+    get:
+      tags: [teams]
+      summary: List teams for an event
+      operationId: listEventTeams
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Teams for the event.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [teams]
+      summary: Create a team for an event
+      operationId: createEventTeam
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamRequest'
+      responses:
+        '200':
+          description: Team created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/teams/me:
+    get:
+      tags: [teams]
+      summary: List current user's teams
+      operationId: listMyTeams
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Teams containing the current user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/team-requests/me:
+    get:
+      tags: [teams]
+      summary: List current user's pending team requests
+      operationId: listMyTeamRequests
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Pending requests and invitations for the current user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamMembershipResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/teams/{teamId}:
+    get:
+      tags: [teams]
+      summary: Get team by id
+      operationId: getEventTeam
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+      responses:
+        '200':
+          description: Team details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      tags: [teams]
+      summary: Update a team
+      operationId: updateEventTeam
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTeamRequest'
+      responses:
+        '200':
+          description: Team updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [teams]
+      summary: Delete a team
+      operationId: deleteEventTeam
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+      responses:
+        '204':
+          description: Team deleted.
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/teams/{teamId}/members:
+    get:
+      tags: [teams]
+      summary: List team members
+      operationId: listEventTeamMembers
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+      responses:
+        '200':
+          description: Team members.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/teams/{teamId}/members/{userId}:
+    delete:
+      tags: [teams]
+      summary: Remove a user from a team
+      operationId: removeEventTeamMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '204':
+          description: User removed from team.
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/teams/{teamId}/owner/{userId}:
+    put:
+      tags: [teams]
+      summary: Transfer team ownership
+      operationId: transferEventTeamOwnership
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Ownership transferred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/teams/{teamId}/requests:
+    get:
+      tags: [teams]
+      summary: List pending join requests for a team
+      operationId: listEventTeamRequests
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+      responses:
+        '200':
+          description: Pending team join requests.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamMembershipResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [teams]
+      summary: Request to join a team
+      operationId: requestToJoinEventTeam
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+      responses:
+        '200':
+          description: Join request created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMembershipResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [teams]
+      summary: Delete current user's join request
+      operationId: deleteMyEventTeamRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+      responses:
+        '204':
+          description: Join request deleted.
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/teams/{teamId}/requests/{userId}:
+    put:
+      tags: [teams]
+      summary: Accept or reject a team join request
+      operationId: respondToEventTeamRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RespondToRequestRequest'
+      responses:
+        '200':
+          description: Join request updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMembershipResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/teams/{teamId}/invitations:
+    post:
+      tags: [teams]
+      summary: Invite a user to a team
+      operationId: inviteUserToEventTeam
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteUserRequest'
+      responses:
+        '200':
+          description: Invitation created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMembershipResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      tags: [teams]
+      summary: Accept or reject current user's team invitation
+      operationId: respondToEventTeamInvitation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RespondToRequestRequest'
+      responses:
+        '200':
+          description: Invitation updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMembershipResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/events/{eventId}/teams/{teamId}/invitations/{userId}:
+    delete:
+      tags: [teams]
+      summary: Delete a team invitation
+      operationId: deleteEventTeamInvitation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '204':
+          description: Invitation deleted.
+        default:
+          $ref: '#/components/responses/Error'
+  /api/payments/orders:
+    post:
+      tags: [payments]
+      summary: Create a Razorpay order for an event registration
+      operationId: createPaymentOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '200':
+          description: Razorpay order created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/payments/verify:
+    post:
+      tags: [payments]
+      summary: Verify Razorpay payment and complete registration
+      operationId: verifyPayment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPaymentRequest'
+      responses:
+        '200':
+          description: Payment verified and completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/payments/fail:
+    post:
+      tags: [payments]
+      summary: Mark a Razorpay order payment as failed
+      operationId: failPayment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: razorpayOrderId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment marked failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/payments/registration/{registrationId}:
+    get:
+      tags: [payments]
+      summary: Get payment by registration id
+      operationId: getPaymentByRegistration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RegistrationId'
+      responses:
+        '200':
+          description: Payment details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /webhooks/razorpay:
+    post:
+      tags: [webhooks]
+      summary: Handle Razorpay webhook
+      operationId: handleRazorpayWebhook
+      parameters:
+        - in: header
+          name: X-Razorpay-Signature
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '204':
+          description: Webhook accepted.
+        default:
+          $ref: '#/components/responses/Error'
+  /swagger:
+    get:
+      tags: [swagger]
+      summary: List available Swagger documentation pages
+      operationId: listSwaggerDocs
+      responses:
+        '200':
+          description: Swagger documentation index page.
+          content:
+            text/html:
+              schema:
+                type: string
+        default:
+          $ref: '#/components/responses/Error'
+  /swagger/{role}:
+    get:
+      tags: [swagger]
+      summary: Render Swagger UI for a role category
+      operationId: getSwaggerRoleDocs
+      parameters:
+        - in: path
+          name: role
+          required: true
+          schema:
+            type: string
+            enum: [admin, moderator, user]
+      responses:
+        '200':
+          description: Swagger UI HTML page.
+          content:
+            text/html:
+              schema:
+                type: string
+        default:
+          $ref: '#/components/responses/Error'
+  /swagger/specs/{role}.yaml:
+    get:
+      tags: [swagger]
+      summary: Get OpenAPI YAML for a role category
+      operationId: getSwaggerRoleSpec
+      parameters:
+        - in: path
+          name: role
+          required: true
+          schema:
+            type: string
+            enum: [admin, moderator, user]
+      responses:
+        '200':
+          description: OpenAPI YAML document.
+          content:
+            application/yaml:
+              schema:
+                type: string
+        default:
+          $ref: '#/components/responses/Error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    EventId:
+      in: path
+      name: eventId
+      required: true
+      schema:
+        type: integer
+        format: int64
+    TeamId:
+      in: path
+      name: teamId
+      required: true
+      schema:
+        type: integer
+        format: int64
+    UserId:
+      in: path
+      name: userId
+      required: true
+      schema:
+        type: integer
+        format: int64
+    RegistrationId:
+      in: path
+      name: registrationId
+      required: true
+      schema:
+        type: integer
+        format: int64
+  responses:
+    Error:
+      description: Error response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+  schemas:
+    Role:
+      type: string
+      enum: [USER, MODERATOR, ADMIN]
+    EventType:
+      type: string
+      enum: [SOLO, TEAM]
+    EventVisibility:
+      type: string
+      enum: [PRIVATE, PUBLIC]
+    EventStatus:
+      type: string
+      enum: [DRAFT, PUBLISHED, COMPLETED, CANCELLED]
+    RequestStatus:
+      type: string
+      enum: [PENDING, APPROVED, REJECTED, CANCELLED]
+    RegistrationStatus:
+      type: string
+      enum: [PENDING, REGISTERED, CANCELLED]
+    PaymentStatus:
+      type: string
+      enum: [PENDING, COMPLETED, FAILED, CANCELLED]
+    CreateUserRequest:
+      type: object
+      required: [name, email, password, phone]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+          format: password
+        phone:
+          type: string
+          pattern: '^\\d{10}$'
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          format: password
+    OtpVerifyRequest:
+      type: object
+      properties:
+        otp:
+          type: string
+    RegisterResponse:
+      type: object
+      properties:
+        token:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        emailVerified:
+          type: boolean
+        phoneVerified:
+          type: boolean
+    EventResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        createdBy:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/EventType'
+        visibility:
+          $ref: '#/components/schemas/EventVisibility'
+        status:
+          $ref: '#/components/schemas/EventStatus'
+        maxParticipants:
+          type: integer
+          minimum: 1
+        minTeamSize:
+          type: integer
+          minimum: 1
+          nullable: true
+        maxTeamSize:
+          type: integer
+          minimum: 1
+          nullable: true
+        registrationFee:
+          type: number
+          format: double
+          minimum: 0
+        registrationDeadline:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    TeamResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        ownerId:
+          type: integer
+          format: int64
+        eventId:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TeamMembershipResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        teamId:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/RequestStatus'
+    EventRegistrationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        eventId:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+          nullable: true
+        teamId:
+          type: integer
+          format: int64
+          nullable: true
+        status:
+          $ref: '#/components/schemas/RegistrationStatus'
+        registeredAt:
+          type: string
+          format: date-time
+    RegisterEventRequest:
+      type: object
+      properties:
+        teamId:
+          type: integer
+          format: int64
+          minimum: 1
+          nullable: true
+    CreateTeamRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        maxMembers:
+          type: integer
+          minimum: 1
+          default: 1
+    UpdateTeamRequest:
+      type: object
+      properties:
+        name:
+          type: string
+    InviteUserRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    RespondToRequestRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [APPROVED, REJECTED]
+    CreateOrderRequest:
+      type: object
+      required: [registrationId]
+      properties:
+        registrationId:
+          type: integer
+          format: int64
+          minimum: 1
+    CreateOrderResponse:
+      type: object
+      properties:
+        paymentId:
+          type: integer
+          format: int64
+        razorpayOrderId:
+          type: string
+        amount:
+          type: number
+          format: double
+        currency:
+          type: string
+          example: INR
+        razorpayKeyId:
+          type: string
+    VerifyPaymentRequest:
+      type: object
+      required: [razorpayOrderId, razorpayPaymentId, razorpaySignature]
+      properties:
+        razorpayOrderId:
+          type: string
+        razorpayPaymentId:
+          type: string
+        razorpaySignature:
+          type: string
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        registrationId:
+          type: integer
+          format: int64
+        amount:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        providerOrderId:
+          type: string
+        providerPaymentId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+    ApiErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+          nullable: true
+        details:
+          type: array
+          items:
+            type: string
