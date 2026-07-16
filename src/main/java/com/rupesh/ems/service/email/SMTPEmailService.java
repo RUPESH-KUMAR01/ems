@@ -1,4 +1,4 @@
-package com.rupesh.ems.service.Email;
+package com.rupesh.ems.service.email;
 
 import com.rupesh.ems.configs.EmailServiceConfiguration;
 import jakarta.mail.Authenticator;

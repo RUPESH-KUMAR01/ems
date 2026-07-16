@@ -31,8 +31,7 @@ public class EventTeamRequestService {
     this.eventTeamService = eventTeamService;
   }
 
-  public TeamMembershipResponse requestToJoinTeam(
-      Long eventId, Long teamId, UserPrincipal user) {
+  public TeamMembershipResponse requestToJoinTeam(Long eventId, Long teamId, UserPrincipal user) {
     eventTeamService.ensureVerified(user);
 
     Team team = eventTeamService.getEventTeam(eventId, teamId);
@@ -130,8 +129,7 @@ public class EventTeamRequestService {
 
     if (response.isApproved()) {
       eventTeamService.ensureTeamCanAcceptMember(eventId, teamId);
-      eventTeamService.ensureNotTeamMember(
-          teamId, userId, "User is already a member of this team");
+      eventTeamService.ensureNotTeamMember(teamId, userId, "User is already a member of this team");
       eventTeamService.addTeamMember(teamId, userId);
     }
 

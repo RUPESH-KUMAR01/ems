@@ -89,15 +89,17 @@ public class TeamDao extends AbstractDAO<Team> {
   }
 
   public List<Team> findByUserId(Long userId) {
-      return currentSession()
-          .createQuery("""
+    return currentSession()
+        .createQuery(
+            """
               SELECT t
               FROM Team t
               JOIN TeamMember tm
                 ON tm.teamId = t.id
               WHERE tm.userId = :userId
-              """, Team.class)
-          .setParameter("userId", userId)
-          .getResultList();
+              """,
+            Team.class)
+        .setParameter("userId", userId)
+        .getResultList();
   }
 }

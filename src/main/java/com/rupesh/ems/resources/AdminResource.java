@@ -92,7 +92,6 @@ public class AdminResource {
     return adminService.deleteUser(userId, admin);
   }
 
-
   @GET
   @UnitOfWork
   @Path("/teams/{teamId}")

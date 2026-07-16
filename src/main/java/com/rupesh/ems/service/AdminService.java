@@ -1,6 +1,5 @@
 package com.rupesh.ems.service;
 
-import com.rupesh.ems.Util.PasswordUtil;
 import com.rupesh.ems.api.admin.req.ChangeUserRoleRequest;
 import com.rupesh.ems.api.admin.req.CreateManagedUserRequest;
 import com.rupesh.ems.api.admin.req.UpdateUserRequest;
@@ -22,6 +21,7 @@ import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
+import com.rupesh.ems.util.PasswordUtil;
 import java.util.List;
 
 public class AdminService {
@@ -150,7 +150,6 @@ public class AdminService {
 
     return new UserResponse(user);
   }
-
 
   public TeamResponse getTeamById(Long teamId) {
     return new TeamResponse(getTeamOrThrow(teamId));

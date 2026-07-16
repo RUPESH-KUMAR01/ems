@@ -1,6 +1,5 @@
 package com.rupesh.ems.service;
 
-import com.rupesh.ems.Util.PasswordUtil;
 import com.rupesh.ems.api.auth.req.CreateUserRequest;
 import com.rupesh.ems.api.auth.req.LoginRequest;
 import com.rupesh.ems.api.auth.res.LoginResponse;
@@ -12,6 +11,7 @@ import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import com.rupesh.ems.exceptions.UnauthorizedException;
+import com.rupesh.ems.util.PasswordUtil;
 
 public class AuthService {
   private final UserDao userDao;

@@ -43,11 +43,7 @@ public class EventRegistration {
 
   public EventRegistration() {}
 
-  public EventRegistration(
-      Long eventId,
-      Long userId,
-      Long teamId,
-      RegistrationStatus status) {
+  public EventRegistration(Long eventId, Long userId, Long teamId, RegistrationStatus status) {
     this.eventId = eventId;
     this.userId = userId;
     this.teamId = teamId;
@@ -85,5 +81,13 @@ public class EventRegistration {
 
   public void setStatus(RegistrationStatus status) {
     this.status = status;
+  }
+
+  public boolean isSoloRegistration() {
+    return userId != null;
+  }
+
+  public boolean isTeamRegistration() {
+    return teamId != null;
   }
 }

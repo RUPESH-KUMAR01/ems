@@ -1,10 +1,10 @@
 package com.rupesh.ems.service;
 
-import com.rupesh.ems.Util.PasswordUtil;
 import com.rupesh.ems.configs.BootstrapAdminConfiguration;
 import com.rupesh.ems.core.Role;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.db.UserDao;
+import com.rupesh.ems.util.PasswordUtil;
 import io.dropwizard.hibernate.UnitOfWork;
 import java.util.Optional;
 

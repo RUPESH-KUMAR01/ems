@@ -1,4 +1,4 @@
-package com.rupesh.ems.Util;
+package com.rupesh.ems.util;
 
 import jakarta.ws.rs.InternalServerErrorException;
 import java.security.SecureRandom;

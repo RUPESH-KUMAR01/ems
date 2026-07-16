@@ -1,4 +1,4 @@
-package com.rupesh.ems.Util;
+package com.rupesh.ems.util;
 
 import org.mindrot.jbcrypt.BCrypt;
 

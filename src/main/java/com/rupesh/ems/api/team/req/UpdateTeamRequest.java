@@ -12,5 +12,4 @@ public class UpdateTeamRequest {
   public String getName() {
     return name;
   }
-
 }

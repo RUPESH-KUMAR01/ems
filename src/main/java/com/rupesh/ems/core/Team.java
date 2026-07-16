@@ -27,7 +27,7 @@ public class Team {
   @Column(name = "owner_id", nullable = false)
   private Long ownerId;
 
-  @Column(name ="event_id", nullable = false)
+  @Column(name = "event_id", nullable = false)
   private Long eventId;
 
   @Column(name = "created_at", nullable = false, updatable = false)

@@ -1,6 +1,5 @@
 package com.rupesh.ems.service;
 
-import com.rupesh.ems.Util.OtpUtil;
 import com.rupesh.ems.core.User;
 import com.rupesh.ems.core.VerificationCode;
 import com.rupesh.ems.core.VerificationType;
@@ -10,8 +9,9 @@ import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import com.rupesh.ems.exceptions.UnauthorizedException;
 import com.rupesh.ems.exceptions.UnprocessableEntityException;
-import com.rupesh.ems.service.Email.EmailService;
-import com.rupesh.ems.service.Sms.SmsService;
+import com.rupesh.ems.service.email.EmailService;
+import com.rupesh.ems.service.sms.SmsService;
+import com.rupesh.ems.util.OtpUtil;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 

@@ -68,7 +68,6 @@ public class EventResource {
     return eventService.getVisibleEvents();
   }
 
-
   @PUT
   @Path("/{eventId}/publish")
   @RolesAllowed("MODERATOR")

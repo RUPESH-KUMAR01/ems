@@ -87,12 +87,9 @@ public class EventTeamService {
   }
 
   public List<TeamResponse> getTeamsForUser(UserPrincipal user) {
-      ensureVerified(user);
+    ensureVerified(user);
 
-      return teamDao.findByUserId(user.getId())
-          .stream()
-          .map(TeamResponse::new)
-          .toList();
+    return teamDao.findByUserId(user.getId()).stream().map(TeamResponse::new).toList();
   }
 
   public void deleteTeam(Long eventId, Long teamId, UserPrincipal user) {
@@ -166,7 +163,9 @@ public class EventTeamService {
   }
 
   public Event getEventOrThrow(Long eventId) {
-    return eventDao.getEventById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
+    return eventDao
+        .getEventById(eventId)
+        .orElseThrow(() -> new NotFoundException("Event not found"));
   }
 
   public void ensureVerified(UserPrincipal user) {

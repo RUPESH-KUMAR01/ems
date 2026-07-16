@@ -1,4 +1,4 @@
-package com.rupesh.ems.service.Sms;
+package com.rupesh.ems.service.sms;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
