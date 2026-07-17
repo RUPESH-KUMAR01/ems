@@ -8,6 +8,7 @@ import com.rupesh.ems.db.EventRegistrationDao;
 import com.rupesh.ems.db.TeamDao;
 import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
+import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
 
 public class EventRegistrationService {
@@ -37,8 +38,13 @@ public class EventRegistrationService {
                 throw new ConflictException("Already registered");
               });
 
+      RegistrationStatus initialStatus =
+          (event.getRegistrationFee() == null || event.getRegistrationFee().compareTo(java.math.BigDecimal.ZERO) == 0)
+              ? RegistrationStatus.REGISTERED
+              : RegistrationStatus.PENDING;
+
       EventRegistration registration =
-          new EventRegistration(eventId, user.getId(), null, RegistrationStatus.PENDING);
+          new EventRegistration(eventId, user.getId(), null, initialStatus);
 
       return new EventRegistrationResponse(registrationDao.create(registration));
     }
@@ -58,18 +64,35 @@ public class EventRegistrationService {
               throw new ConflictException("Team already registered");
             });
 
+    RegistrationStatus initialStatus =
+        (event.getRegistrationFee() == null || event.getRegistrationFee().compareTo(java.math.BigDecimal.ZERO) == 0)
+            ? RegistrationStatus.REGISTERED
+            : RegistrationStatus.PENDING;
+
     EventRegistration registration =
-        new EventRegistration(eventId, null, teamId, RegistrationStatus.PENDING);
+        new EventRegistration(eventId, null, teamId, initialStatus);
 
     return new EventRegistrationResponse(registrationDao.create(registration));
   }
 
-  public void cancel(Long registrationId) {
+  public void cancel(Long registrationId, UserPrincipal user) {
 
     EventRegistration registration =
         registrationDao
             .getById(registrationId)
             .orElseThrow(() -> new NotFoundException("Registration not found"));
+
+    if (registration.isSoloRegistration()) {
+      if (!registration.getUserId().equals(user.getId())) {
+        throw new ForbiddenException("You can only cancel your own registration");
+      }
+    } else if (registration.isTeamRegistration()) {
+      com.rupesh.ems.core.Team team = teamDao.getTeamById(registration.getTeamId())
+          .orElseThrow(() -> new NotFoundException("Team not found"));
+      if (!team.getOwnerId().equals(user.getId())) {
+        throw new ForbiddenException("Only the team owner can cancel the registration");
+      }
+    }
 
     registration.setStatus(RegistrationStatus.CANCELLED);
 

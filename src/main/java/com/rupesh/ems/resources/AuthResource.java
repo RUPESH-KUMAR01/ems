@@ -9,14 +9,20 @@ import com.rupesh.ems.api.auth.res.RegisterResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.service.AuthService;
+import com.rupesh.ems.api.common.MessageResponse;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/api/auth")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class AuthResource {
   private final AuthService authService;
 
@@ -41,29 +47,33 @@ public class AuthResource {
   @POST
   @UnitOfWork
   @Path("/verify-email")
-  public void verifyEmail(@Auth UserPrincipal user, @Valid EmailVerifyRequest req) {
+  public MessageResponse verifyEmail(@Auth UserPrincipal user, @Valid EmailVerifyRequest req) {
     authService.verifyEmail(user.getId(), req.getOtp());
+    return new MessageResponse("Email verified successfully");
   }
 
   @POST
   @UnitOfWork
   @Path("/verify-phone")
-  public void verifyPhone(@Auth UserPrincipal user, @Valid PhoneVerifyRequest req) {
+  public MessageResponse verifyPhone(@Auth UserPrincipal user, @Valid PhoneVerifyRequest req) {
     authService.verifyPhone(user.getId(), req.getOtp());
+    return new MessageResponse("Phone verified successfully");
   }
 
   @POST
   @UnitOfWork
   @Path("/generate-email-otp")
-  public void generateEmailOtp(@Auth UserPrincipal user) {
+  public MessageResponse generateEmailOtp(@Auth UserPrincipal user) {
     authService.generateEmailOtp(user.getId());
+    return new MessageResponse("Email OTP generated successfully");
   }
 
   @POST
   @UnitOfWork
   @Path("/generate-phone-otp")
-  public void generatePhoneOtp(@Auth UserPrincipal user) {
+  public MessageResponse generatePhoneOtp(@Auth UserPrincipal user) {
     authService.generatePhoneOtp(user.getId());
+    return new MessageResponse("Phone OTP generated successfully");
   }
 
   @GET

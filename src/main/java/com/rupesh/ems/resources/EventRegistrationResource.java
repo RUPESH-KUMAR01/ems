@@ -10,6 +10,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import com.rupesh.ems.api.common.MessageResponse;
 
 @Path("/api/events/{eventId}/registrations")
 @Produces(MediaType.APPLICATION_JSON)
@@ -36,9 +37,10 @@ public class EventRegistrationResource {
   @DELETE
   @Path("/{registrationId}")
   @UnitOfWork
-  public void cancelRegistration(
+  public MessageResponse cancelRegistration(
       @PathParam("registrationId") Long registrationId, @Auth UserPrincipal user) {
 
-    registrationService.cancel(registrationId);
+    registrationService.cancel(registrationId, user);
+    return new MessageResponse("Registration cancelled successfully");
   }
 }

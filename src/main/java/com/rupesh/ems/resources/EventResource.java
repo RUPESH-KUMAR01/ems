@@ -5,14 +5,18 @@ import com.rupesh.ems.api.event.req.UpdateEventRequest;
 import com.rupesh.ems.api.event.res.EventResponse;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.service.EventService;
+import com.rupesh.ems.api.common.MessageResponse;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.util.List;
 
 @Path("/api/events")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class EventResource {
 
   private final EventService eventService;
@@ -43,8 +47,9 @@ public class EventResource {
   @Path("/{eventId}")
   @RolesAllowed("MODERATOR")
   @UnitOfWork
-  public void deleteEvent(@Auth UserPrincipal user, @PathParam("eventId") Long eventId) {
+  public MessageResponse deleteEvent(@Auth UserPrincipal user, @PathParam("eventId") Long eventId) {
     eventService.deleteEvent(user, eventId);
+    return new MessageResponse("Event deleted successfully");
   }
 
   @GET

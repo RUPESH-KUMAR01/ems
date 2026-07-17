@@ -47,10 +47,10 @@ public class PaymentResource {
   }
 
   @POST
-  @Path("/fail")
+  @Path("/fail/{razorpayOrderId}")
   @UnitOfWork
   public PaymentResponse failPayment(
-      @QueryParam("razorpayOrderId") String razorpayOrderId, @Auth UserPrincipal user) {
+      @PathParam("razorpayOrderId") String razorpayOrderId, @Auth UserPrincipal user) {
 
     return paymentService.failPayment(razorpayOrderId);
   }

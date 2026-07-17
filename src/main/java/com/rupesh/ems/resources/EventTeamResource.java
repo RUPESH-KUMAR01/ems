@@ -20,9 +20,15 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.core.MediaType;
 import java.util.List;
+import com.rupesh.ems.api.common.MessageResponse;
 
 @Path("/api")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 @RolesAllowed("USER")
 public class EventTeamResource {
   private final EventTeamService eventTeamService;
@@ -82,11 +88,12 @@ public class EventTeamResource {
   @DELETE
   @Path("/events/{eventId}/teams/{teamId}")
   @UnitOfWork
-  public void deleteTeam(
+  public MessageResponse deleteTeam(
       @PathParam("eventId") Long eventId,
       @PathParam("teamId") Long teamId,
       @Auth UserPrincipal user) {
     eventTeamService.deleteTeam(eventId, teamId, user);
+    return new MessageResponse("Team deleted successfully");
   }
 
   @GET
@@ -102,12 +109,13 @@ public class EventTeamResource {
   @DELETE
   @Path("/events/{eventId}/teams/{teamId}/members/{userId}")
   @UnitOfWork
-  public void removeUserFromTeam(
+  public MessageResponse removeUserFromTeam(
       @PathParam("eventId") Long eventId,
       @PathParam("teamId") Long teamId,
       @PathParam("userId") Long userId,
       @Auth UserPrincipal user) {
     eventTeamService.removeUserFromTeam(eventId, teamId, userId, user);
+    return new MessageResponse("User removed from team successfully");
   }
 
   @PUT
@@ -134,11 +142,12 @@ public class EventTeamResource {
   @DELETE
   @Path("/events/{eventId}/teams/{teamId}/requests")
   @UnitOfWork
-  public void deleteRequest(
+  public MessageResponse deleteRequest(
       @PathParam("eventId") Long eventId,
       @PathParam("teamId") Long teamId,
       @Auth UserPrincipal user) {
     eventTeamRequestService.deleteRequest(eventId, teamId, user);
+    return new MessageResponse("Request deleted successfully");
   }
 
   @GET
@@ -184,12 +193,13 @@ public class EventTeamResource {
   @DELETE
   @Path("/events/{eventId}/teams/{teamId}/invitations/{userId}")
   @UnitOfWork
-  public void deleteInvitation(
+  public MessageResponse deleteInvitation(
       @PathParam("eventId") Long eventId,
       @PathParam("teamId") Long teamId,
       @PathParam("userId") Long userId,
       @Auth UserPrincipal user) {
     eventTeamRequestService.deleteInvitation(eventId, teamId, userId, user);
+    return new MessageResponse("Invitation deleted successfully");
   }
 
   @PUT
