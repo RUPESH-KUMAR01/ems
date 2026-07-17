@@ -27,6 +27,7 @@ import com.rupesh.ems.resources.EventTeamResource;
 import com.rupesh.ems.resources.PaymentResource;
 import com.rupesh.ems.resources.SwaggerDocsResource;
 import com.rupesh.ems.resources.WebhookResource;
+import com.rupesh.ems.security.interceptors.RateLimitDynamicFeature;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
 import com.rupesh.ems.service.BootstrapAdminService;
@@ -157,5 +158,6 @@ public class EventManagementSystemApplication
     environment.jersey().register(new PaymentResource(paymentService));
     environment.jersey().register(new WebhookResource(paymentService));
     environment.jersey().register(new SwaggerDocsResource());
+    environment.jersey().register(new RateLimitDynamicFeature());
   }
 }
