@@ -1,11 +1,11 @@
 package com.rupesh.ems.resources;
 
+import com.rupesh.ems.api.common.MessageResponse;
 import com.rupesh.ems.api.event.req.CreateEventRequest;
 import com.rupesh.ems.api.event.req.UpdateEventRequest;
 import com.rupesh.ems.api.event.res.EventResponse;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.service.EventService;
-import com.rupesh.ems.api.common.MessageResponse;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
 import jakarta.annotation.security.RolesAllowed;

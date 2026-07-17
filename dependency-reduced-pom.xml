@@ -183,7 +183,7 @@
     </dependencies>
   </dependencyManagement>
   <properties>
-    <maven.compiler.release>21</maven.compiler.release>
+    <maven.compiler.release>17</maven.compiler.release>
     <dropwizard.version>5.0.1</dropwizard.version>
     <mainClass>com.rupesh.ems.EventManagementSystemApplication</mainClass>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
