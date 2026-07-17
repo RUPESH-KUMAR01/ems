@@ -1,5 +1,6 @@
 package com.rupesh.ems.resources;
 
+import com.rupesh.ems.api.common.MessageResponse;
 import com.rupesh.ems.api.registration.req.RegisterEventRequest;
 import com.rupesh.ems.api.registration.res.EventRegistrationResponse;
 import com.rupesh.ems.auth.UserPrincipal;
@@ -10,7 +11,6 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import com.rupesh.ems.api.common.MessageResponse;
 
 @Path("/api/events/{eventId}/registrations")
 @Produces(MediaType.APPLICATION_JSON)

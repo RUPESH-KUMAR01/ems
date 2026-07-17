@@ -7,17 +7,17 @@ import com.rupesh.ems.api.auth.req.PhoneVerifyRequest;
 import com.rupesh.ems.api.auth.res.LoginResponse;
 import com.rupesh.ems.api.auth.res.RegisterResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
+import com.rupesh.ems.api.common.MessageResponse;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.service.AuthService;
-import com.rupesh.ems.api.common.MessageResponse;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
 
 @Path("/api/auth")

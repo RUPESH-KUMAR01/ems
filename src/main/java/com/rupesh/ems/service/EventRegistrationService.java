@@ -39,7 +39,8 @@ public class EventRegistrationService {
               });
 
       RegistrationStatus initialStatus =
-          (event.getRegistrationFee() == null || event.getRegistrationFee().compareTo(java.math.BigDecimal.ZERO) == 0)
+          (event.getRegistrationFee() == null
+                  || event.getRegistrationFee().compareTo(java.math.BigDecimal.ZERO) == 0)
               ? RegistrationStatus.REGISTERED
               : RegistrationStatus.PENDING;
 
@@ -65,12 +66,12 @@ public class EventRegistrationService {
             });
 
     RegistrationStatus initialStatus =
-        (event.getRegistrationFee() == null || event.getRegistrationFee().compareTo(java.math.BigDecimal.ZERO) == 0)
+        (event.getRegistrationFee() == null
+                || event.getRegistrationFee().compareTo(java.math.BigDecimal.ZERO) == 0)
             ? RegistrationStatus.REGISTERED
             : RegistrationStatus.PENDING;
 
-    EventRegistration registration =
-        new EventRegistration(eventId, null, teamId, initialStatus);
+    EventRegistration registration = new EventRegistration(eventId, null, teamId, initialStatus);
 
     return new EventRegistrationResponse(registrationDao.create(registration));
   }
@@ -87,8 +88,10 @@ public class EventRegistrationService {
         throw new ForbiddenException("You can only cancel your own registration");
       }
     } else if (registration.isTeamRegistration()) {
-      com.rupesh.ems.core.Team team = teamDao.getTeamById(registration.getTeamId())
-          .orElseThrow(() -> new NotFoundException("Team not found"));
+      com.rupesh.ems.core.Team team =
+          teamDao
+              .getTeamById(registration.getTeamId())
+              .orElseThrow(() -> new NotFoundException("Team not found"));
       if (!team.getOwnerId().equals(user.getId())) {
         throw new ForbiddenException("Only the team owner can cancel the registration");
       }
