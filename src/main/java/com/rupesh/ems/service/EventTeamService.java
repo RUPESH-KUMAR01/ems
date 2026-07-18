@@ -21,8 +21,11 @@ import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.time.Instant;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventTeamService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(EventTeamService.class);
 
   private final EventDao eventDao;
   private final TeamDao teamDao;

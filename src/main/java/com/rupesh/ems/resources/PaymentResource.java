@@ -12,12 +12,15 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/api/payments")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RolesAllowed("USER")
 public class PaymentResource {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PaymentResource.class);
 
   private final PaymentService paymentService;
 

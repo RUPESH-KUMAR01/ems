@@ -7,8 +7,12 @@ import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.util.PasswordUtil;
 import io.dropwizard.hibernate.UnitOfWork;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BootstrapAdminService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(BootstrapAdminService.class);
+
   private final UserDao userDao;
 
   public BootstrapAdminService(UserDao userDao) {

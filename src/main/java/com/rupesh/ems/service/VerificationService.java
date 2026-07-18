@@ -14,8 +14,11 @@ import com.rupesh.ems.service.sms.SmsService;
 import com.rupesh.ems.util.OtpUtil;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class VerificationService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(VerificationService.class);
 
   private static final int OTP_LENGTH = 6;
   private static final int OTP_EXPIRY_MINUTES = 10;

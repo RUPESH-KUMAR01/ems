@@ -11,8 +11,11 @@ import com.rupesh.ems.configs.JWTConfig;
 import com.rupesh.ems.core.Role;
 import com.rupesh.ems.exceptions.UnauthorizedException;
 import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JWTService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(JWTService.class);
 
   private final Long expireInMilliSec;
   private final JWTVerifier verifier;

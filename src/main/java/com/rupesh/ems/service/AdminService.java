@@ -23,8 +23,12 @@ import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import com.rupesh.ems.util.PasswordUtil;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AdminService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AdminService.class);
+
   private final UserDao userDao;
   private final TeamDao teamDao;
   private final TeamMemberDao teamMemberDao;

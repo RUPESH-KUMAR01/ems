@@ -11,12 +11,15 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/api/events/{eventId}/registrations")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RolesAllowed("USER")
 public class EventRegistrationResource {
+  private static final Logger LOGGER = LoggerFactory.getLogger(EventRegistrationResource.class);
 
   private final EventRegistrationService registrationService;
 

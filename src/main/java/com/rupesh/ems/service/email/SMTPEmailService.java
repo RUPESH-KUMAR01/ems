@@ -9,8 +9,11 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SMTPEmailService implements EmailService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SMTPEmailService.class);
 
   private final String username;
   private final String password;

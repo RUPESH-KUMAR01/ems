@@ -18,8 +18,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(EventService.class);
 
   private static final Map<EventStatus, Set<EventStatus>> ALLOWED_STATUS_TRANSITIONS =
       new EnumMap<>(

@@ -12,8 +12,12 @@ import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import com.rupesh.ems.exceptions.UnauthorizedException;
 import com.rupesh.ems.util.PasswordUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AuthService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AuthService.class);
+
   private final UserDao userDao;
   private final JWTService jwtService;
   private final VerificationService verificationService;

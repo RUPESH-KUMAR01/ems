@@ -25,12 +25,16 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/api/admin")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RolesAllowed("ADMIN")
 public class AdminResource {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AdminResource.class);
+
   private final AdminService adminService;
 
   public AdminResource(AdminService adminService) {

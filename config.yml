@@ -3,6 +3,18 @@ logging:
   level: INFO
   loggers:
     com.rupesh.ems: DEBUG
+    org.hibernate.SQL: DEBUG
+  appenders:
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      logFormat: "%-5level [%d{yyyy-MM-dd HH:mm:ss.SSS,UTC}] [%thread] %logger{30}: %message%n"
+    - type: file
+      currentLogFilename: ./target/ems.log
+      archivedLogFilenamePattern: ./target/ems-%d.log.gz
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-5level [%d{yyyy-MM-dd HH:mm:ss.SSS,UTC}] [%thread] %logger{30}: %message%n"
 database:
   driverClass: org.postgresql.Driver
 

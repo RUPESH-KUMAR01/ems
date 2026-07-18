@@ -10,8 +10,11 @@ import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventRegistrationService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(EventRegistrationService.class);
 
   private final EventDao eventDao;
   private final TeamDao teamDao;

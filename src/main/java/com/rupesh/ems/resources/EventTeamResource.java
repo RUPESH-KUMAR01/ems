@@ -25,12 +25,16 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/api")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RolesAllowed("USER")
 public class EventTeamResource {
+  private static final Logger LOGGER = LoggerFactory.getLogger(EventTeamResource.class);
+
   private final EventTeamService eventTeamService;
   private final EventTeamRequestService eventTeamRequestService;
 

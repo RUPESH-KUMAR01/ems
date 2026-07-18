@@ -1,9 +1,7 @@
 package com.rupesh.ems.ratelimit;
 
-
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RateLimitService {
@@ -19,9 +17,7 @@ public class RateLimitService {
                 .addLimit(
                     Bandwidth.builder()
                         .capacity(policy.capacity())
-                        .refillGreedy(
-                            policy.refillTokens(),
-                            policy.refillDuration())
+                        .refillGreedy(policy.refillTokens(), policy.refillDuration())
                         .build())
                 .build());
   }
