@@ -9,8 +9,6 @@ import com.rupesh.ems.api.auth.res.RegisterResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
 import com.rupesh.ems.api.common.MessageResponse;
 import com.rupesh.ems.auth.UserPrincipal;
-import com.rupesh.ems.security.annotations.RateLimit;
-import com.rupesh.ems.security.annotations.RateLimitStrategy;
 import com.rupesh.ems.service.AuthService;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
@@ -35,7 +33,6 @@ public class AuthResource {
   @POST
   @UnitOfWork
   @Path("/register")
-  @RateLimit(capacity = 5, refillTokens = 3, refillDuration = 5, strategy = RateLimitStrategy.IP)
   public RegisterResponse createUser(@Valid CreateUserRequest req) {
     return authService.register(req);
   }
