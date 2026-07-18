@@ -19,6 +19,9 @@ import com.rupesh.ems.db.TeamMemberDao;
 import com.rupesh.ems.db.TeamMembershipRequestDao;
 import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.db.VerificationDao;
+import com.rupesh.ems.mappers.ApiExceptionMapper;
+import com.rupesh.ems.ratelimit.RateLimitFilter;
+import com.rupesh.ems.ratelimit.RateLimitService;
 import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
 import com.rupesh.ems.resources.EventRegistrationResource;
@@ -129,6 +132,7 @@ public class EventManagementSystemApplication
     PaymentService paymentService =
         new PaymentService(
             paymentDao, eventRegistrationDao, eventDao, configuration.getRazorpayConfig());
+    RateLimitService rateLimitService = new RateLimitService();
 
     JWTAuthenticator authenticator =
         proxyFactory.create(
@@ -149,6 +153,7 @@ public class EventManagementSystemApplication
 
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(UserPrincipal.class));
     environment.jersey().register(RolesAllowedDynamicFeature.class);
+    environment.jersey().register(ApiExceptionMapper.class);
     environment.jersey().register(new AuthResource(authService));
     environment.jersey().register(new AdminResource(adminService));
     environment.jersey().register(new EventResource(eventService));
@@ -157,5 +162,6 @@ public class EventManagementSystemApplication
     environment.jersey().register(new PaymentResource(paymentService));
     environment.jersey().register(new WebhookResource(paymentService));
     environment.jersey().register(new SwaggerDocsResource());
+    environment.jersey().register(new RateLimitFilter(rateLimitService));
   }
 }
