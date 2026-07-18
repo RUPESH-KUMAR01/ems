@@ -9,6 +9,7 @@ A backend API for running events end-to-end: user auth, event creation, team for
 - **Auth:** JWT (`java-jwt`) + BCrypt (`jbcrypt`) password hashing
 - **Payments:** Razorpay Java SDK (orders, verification, webhooks)
 - **Email:** Jakarta Mail (SMTP)
+- **RateLimiter:** Bucket4j
 - **Build:** Maven, with Spotless, Checkstyle, and PMD wired in for code quality
 - **Containerization:** Docker Compose (Postgres)
 
@@ -116,9 +117,7 @@ Things still on the todo list for this project:
 - **Real SMS provider** — phone OTP currently only logs to console via `ConsoleSmsService`; needs a real provider integration (e.g. Twilio) behind the existing `SmsService` interface.
 - **Event search/filtering & pagination** — `getAllEvents` / `getVisibleEvents` currently return unpaginated full lists; needs query params for search, filters (type, status, date range), and pagination.
 - **Refresh tokens** — auth currently issues a single JWT with a fixed expiry; no refresh/rotation flow yet.
-- **Rate limiting** — especially for OTP generation and login endpoints.
 - **File uploads** — no support yet for event banners/images or user avatars.
 - **Notifications** — no email/notification triggers yet for event publish, registration confirmation, or team invites (email service exists but isn't wired into these flows).
-- **API documentation** — no OpenAPI/Swagger spec generated yet.
 
 Contributions and issues welcome once the repo is public-facing.
