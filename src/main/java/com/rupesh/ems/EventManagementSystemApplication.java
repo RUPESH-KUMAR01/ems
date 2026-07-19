@@ -154,7 +154,7 @@ public class EventManagementSystemApplication
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(UserPrincipal.class));
     environment.jersey().register(RolesAllowedDynamicFeature.class);
     environment.jersey().register(ApiExceptionMapper.class);
-    environment.jersey().register(new AuthResource(authService));
+    environment.jersey().register(new AuthResource(authService,verificationService));
     environment.jersey().register(new AdminResource(adminService));
     environment.jersey().register(new EventResource(eventService));
     environment.jersey().register(new EventTeamResource(eventTeamService, eventTeamRequestService));

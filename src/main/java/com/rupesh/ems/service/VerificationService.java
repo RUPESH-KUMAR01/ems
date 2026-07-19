@@ -40,15 +40,19 @@ public class VerificationService {
 
   public void generatePhoneOtp(Long userId) {
     User user =
-        userDao.getUserById(userId).orElseThrow(() -> new NotFoundException("User not Found"));
+        userDao.getUserById(userId).orElseThrow(() -> {
+          LOGGER.warn("User not found for ID: {}", userId);
+          return new NotFoundException("User not Found");
+        });
 
     if (user.isPhoneVerified()) {
+      LOGGER.warn("Attempt to generate OTP for already verified phone for user ID: {}", userId);
       throw new ConflictException("Phone already Verified");
     }
     String otp = OtpUtil.generateOtp(OTP_LENGTH);
 
     verificationDao.deleteByUserAndType(userId, VerificationType.PHONE);
-
+    LOGGER.info("Deleted existing phone verification code for user ID: {}", userId);
     VerificationCode code =
         new VerificationCode(
             userId,
@@ -57,6 +61,7 @@ public class VerificationService {
             Instant.now().plus(OTP_EXPIRY_MINUTES, ChronoUnit.MINUTES));
 
     verificationDao.create(code);
+    LOGGER.info("Created new phone verification code for user ID: {}", userId);
     smsService.sendOtp(
         user.getPhone(),
         """
@@ -70,15 +75,21 @@ public class VerificationService {
   }
 
   public void generateEmailOtp(Long userId) {
+    LOGGER.info("Generating email OTP for user with ID: {}", userId);
     User user =
-        userDao.getUserById(userId).orElseThrow(() -> new NotFoundException("User not Found"));
+        userDao.getUserById(userId).orElseThrow(() -> {
+          LOGGER.warn("User not found for ID: {}", userId);
+          return new NotFoundException("User not Found");
+        });
 
     if (user.isEmailVerified()) {
+      LOGGER.warn("Attempt to generate OTP for already verified email for user ID: {}", userId);
       throw new ConflictException("Email already Verified");
     }
     String otp = OtpUtil.generateOtp(OTP_LENGTH);
 
     verificationDao.deleteByUserAndType(userId, VerificationType.EMAIL);
+    LOGGER.info("Deleted existing email verification code for user ID: {}", userId);
 
     VerificationCode code =
         new VerificationCode(
@@ -88,6 +99,7 @@ public class VerificationService {
             Instant.now().plus(OTP_EXPIRY_MINUTES, ChronoUnit.MINUTES));
 
     verificationDao.create(code);
+    LOGGER.info("Created new email verification code for user ID: {}", userId);
     emailService.sendEmail(
         user.getEmail(),
         "Verify Your EMS Account",
@@ -111,52 +123,76 @@ public class VerificationService {
   }
 
   public void verifyPhone(Long userId, String otp) {
+    LOGGER.info("Verifying phone for user with ID: {}", userId);
     User user =
-        userDao.getUserById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        userDao.getUserById(userId).orElseThrow(() -> {
+          LOGGER.warn("User not found for ID: {}", userId);
+          return new NotFoundException("User not found");
+        });
 
     if (user.isPhoneVerified()) {
+      LOGGER.warn("Attempt to verify already verified phone for user ID: {}", userId);
       throw new ConflictException("Phone already Verified");
     }
 
     VerificationCode verificationCode =
         verificationDao
             .findByUserAndType(user.getId(), VerificationType.PHONE)
-            .orElseThrow(() -> new NotFoundException("Otp not generated"));
+            .orElseThrow(() -> {
+              LOGGER.warn("Otp not generated for user ID: {}", userId);
+              return new NotFoundException("Otp not generated");
+            });
 
     if (verificationCode.isExpired()) {
+      LOGGER.warn("Otp expired for user ID: {}", userId);
       throw new UnprocessableEntityException("Otp expired");
     }
     if (verificationCode.getOtp().equals(otp)) {
       user.setPhoneVerified(true);
     } else {
+      LOGGER.warn("Invalid Otp provided for user ID: {}", userId);
       throw new UnauthorizedException("Invalid Otp");
     }
     userDao.update(user);
+    LOGGER.info("Phone verified successfully for user ID: {}", userId);
     verificationDao.delete(verificationCode);
+    LOGGER.info("Deleted Phone verification code for user ID: {}", userId);
   }
 
   public void verifyEmail(Long userId, String otp) {
+    LOGGER.info("Verifying email for user with ID: {}", userId);
     User user =
-        userDao.getUserById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        userDao.getUserById(userId).orElseThrow(() -> {
+          LOGGER.warn("User not found for ID: {}", userId);
+          return new NotFoundException("User not found");
+        });
 
     if (user.isEmailVerified()) {
+      LOGGER.warn("Attempt to verify already verified email for user ID: {}", userId);
       throw new ConflictException("Email already verified");
     }
 
     VerificationCode verificationCode =
         verificationDao
             .findByUserAndType(user.getId(), VerificationType.EMAIL)
-            .orElseThrow(() -> new NotFoundException("Otp not generated"));
+            .orElseThrow(() -> {
+              LOGGER.warn("OTP not generated for user ID: {}", userId);
+              return new NotFoundException("Otp not generated");
+            });
 
     if (verificationCode.isExpired()) {
+      LOGGER.warn("OTP expired for user ID: {}", userId);
       throw new UnprocessableEntityException("Otp expired");
     }
     if (verificationCode.getOtp().equals(otp)) {
       user.setEmailVerified(true);
     } else {
+      LOGGER.warn("Invalid OTP provided for user ID: {}", userId);
       throw new UnauthorizedException("Invalid Otp");
     }
     userDao.update(user);
+    LOGGER.info("Email verified successfully for user ID: {}", userId);
     verificationDao.delete(verificationCode);
+    LOGGER.info("Deleted Email verification code for user ID: {}", userId);
   }
 }

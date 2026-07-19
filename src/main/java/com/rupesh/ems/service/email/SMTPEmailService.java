@@ -57,9 +57,12 @@ public class SMTPEmailService implements EmailService {
       message.setText(body);
 
       Transport.send(message);
+      LOGGER.info("Email sent successfully to={}", to);
 
     } catch (Exception e) {
+      LOGGER.error("Failed to send email to={}", to, e);
       throw new RuntimeException("Failed to send email", e);
     }
+    
   }
 }

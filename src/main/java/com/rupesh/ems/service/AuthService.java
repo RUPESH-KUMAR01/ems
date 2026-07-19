@@ -30,11 +30,14 @@ public class AuthService {
   }
 
   public RegisterResponse register(CreateUserRequest req) {
+    LOGGER.info("Attempting to register user with email: {}", req.getEmail());
     if (userDao.findByEmail(req.getEmail()).isPresent()) {
+      LOGGER.warn("Attempt to register with existing email: {}", req.getEmail());
       throw new ConflictException("User already exists");
     }
 
     if (userDao.findByPhone(req.getPhone()).isPresent()) {
+      LOGGER.warn("Attempt to register with existing phone number: {}", req.getPhone());
       throw new ConflictException("Phone number already in use");
     }
 
@@ -46,45 +49,36 @@ public class AuthService {
 
     User savedUser = userDao.create(user);
     String token = jwtService.generateJWT(new UserPrincipal(savedUser));
-
+    LOGGER.info("User registered successfully with email: {}", req.getEmail());
     return new RegisterResponse(token);
   }
 
   public LoginResponse login(LoginRequest req) {
+    LOGGER.info("Attempting to login user with email: {}", req.getEmail());
     User user =
         userDao
             .findByEmail(req.getEmail())
-            .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+            .orElseThrow(() -> {
+              LOGGER.warn("Attempt to login with invalid email: {}", req.getEmail());
+              return new UnauthorizedException("Invalid email or password");
+            });
 
     if (!PasswordUtil.verify(req.getPassword(), user.getPasswordHash())) {
+      LOGGER.warn("Attempt to login with invalid password for user: {}", req.getEmail());
       throw new UnauthorizedException("Invalid email or password");
     }
 
     String token = jwtService.generateJWT(new UserPrincipal(user));
+    LOGGER.info("User logged in successfully with email: {}", req.getEmail());
     return new LoginResponse(token);
   }
 
   public UserResponse getUserInfo(UserPrincipal user) {
+    LOGGER.info("Fetching user info for user with ID: {}", user.getId());
     User dbUser =
         userDao
             .getUserById(user.getId())
             .orElseThrow(() -> new NotFoundException("User not Found"));
     return new UserResponse(dbUser);
-  }
-
-  public void verifyEmail(Long userId, String otp) {
-    verificationService.verifyEmail(userId, otp);
-  }
-
-  public void verifyPhone(Long userId, String otp) {
-    verificationService.verifyPhone(userId, otp);
-  }
-
-  public void generateEmailOtp(Long userId) {
-    verificationService.generateEmailOtp(userId);
-  }
-
-  public void generatePhoneOtp(Long userId) {
-    verificationService.generatePhoneOtp(userId);
   }
 }

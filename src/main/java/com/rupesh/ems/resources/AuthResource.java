@@ -10,6 +10,8 @@ import com.rupesh.ems.api.auth.res.UserResponse;
 import com.rupesh.ems.api.common.MessageResponse;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.service.AuthService;
+import com.rupesh.ems.service.VerificationService;
+
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
 import jakarta.validation.Valid;
@@ -29,15 +31,18 @@ public class AuthResource {
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthResource.class);
 
   private final AuthService authService;
+  private final VerificationService verificationService;
 
-  public AuthResource(AuthService authService) {
+  public AuthResource(AuthService authService, VerificationService verificationService) {
     this.authService = authService;
+    this.verificationService = verificationService;
   }
 
   @POST
   @UnitOfWork
   @Path("/register")
   public RegisterResponse createUser(@Valid CreateUserRequest req) {
+    LOGGER.info("Registering user with email: {}", req.getEmail());
     return authService.register(req);
   }
 
@@ -45,6 +50,7 @@ public class AuthResource {
   @UnitOfWork
   @Path("/login")
   public LoginResponse loginUser(@Valid LoginRequest req) {
+    LOGGER.info("Logging in user with email: {}", req.getEmail());
     return authService.login(req);
   }
 
@@ -52,7 +58,8 @@ public class AuthResource {
   @UnitOfWork
   @Path("/verify-email")
   public MessageResponse verifyEmail(@Auth UserPrincipal user, @Valid EmailVerifyRequest req) {
-    authService.verifyEmail(user.getId(), req.getOtp());
+    LOGGER.info("Verifying email for user with ID: {}", user.getId());
+    verificationService.verifyEmail(user.getId(), req.getOtp());
     return new MessageResponse("Email verified successfully");
   }
 
@@ -60,7 +67,8 @@ public class AuthResource {
   @UnitOfWork
   @Path("/verify-phone")
   public MessageResponse verifyPhone(@Auth UserPrincipal user, @Valid PhoneVerifyRequest req) {
-    authService.verifyPhone(user.getId(), req.getOtp());
+    LOGGER.info("Verifying phone for user with ID: {}", user.getId());
+    verificationService.verifyPhone(user.getId(), req.getOtp());
     return new MessageResponse("Phone verified successfully");
   }
 
@@ -68,7 +76,8 @@ public class AuthResource {
   @UnitOfWork
   @Path("/generate-email-otp")
   public MessageResponse generateEmailOtp(@Auth UserPrincipal user) {
-    authService.generateEmailOtp(user.getId());
+    LOGGER.info("Generating email OTP for user with ID: {}", user.getId());
+    verificationService.generateEmailOtp(user.getId());
     return new MessageResponse("Email OTP generated successfully");
   }
 
@@ -76,7 +85,8 @@ public class AuthResource {
   @UnitOfWork
   @Path("/generate-phone-otp")
   public MessageResponse generatePhoneOtp(@Auth UserPrincipal user) {
-    authService.generatePhoneOtp(user.getId());
+    LOGGER.info("Generating phone OTP for user with ID: {}", user.getId());
+    verificationService.generatePhoneOtp(user.getId());
     return new MessageResponse("Phone OTP generated successfully");
   }
 
@@ -84,6 +94,7 @@ public class AuthResource {
   @UnitOfWork
   @Path("/me")
   public UserResponse getUserInfo(@Auth UserPrincipal user) {
+    LOGGER.info("Fetching user info for user with ID: {}", user.getId());
     return authService.getUserInfo(user);
   }
 }

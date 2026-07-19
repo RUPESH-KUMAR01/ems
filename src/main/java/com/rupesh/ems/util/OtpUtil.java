@@ -16,7 +16,6 @@ public final class OtpUtil {
     for (int i = 0; i < length; i++) {
       otp.append(RANDOM.nextInt(10));
     }
-
     return otp.toString();
   }
 }
