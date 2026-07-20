@@ -40,10 +40,13 @@ public class VerificationService {
 
   public void generatePhoneOtp(Long userId) {
     User user =
-        userDao.getUserById(userId).orElseThrow(() -> {
-          LOGGER.warn("User not found for ID: {}", userId);
-          return new NotFoundException("User not Found");
-        });
+        userDao
+            .getUserById(userId)
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("User not found for ID: {}", userId);
+                  return new NotFoundException("User not Found");
+                });
 
     if (user.isPhoneVerified()) {
       LOGGER.warn("Attempt to generate OTP for already verified phone for user ID: {}", userId);
@@ -77,10 +80,13 @@ public class VerificationService {
   public void generateEmailOtp(Long userId) {
     LOGGER.info("Generating email OTP for user with ID: {}", userId);
     User user =
-        userDao.getUserById(userId).orElseThrow(() -> {
-          LOGGER.warn("User not found for ID: {}", userId);
-          return new NotFoundException("User not Found");
-        });
+        userDao
+            .getUserById(userId)
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("User not found for ID: {}", userId);
+                  return new NotFoundException("User not Found");
+                });
 
     if (user.isEmailVerified()) {
       LOGGER.warn("Attempt to generate OTP for already verified email for user ID: {}", userId);
@@ -125,10 +131,13 @@ public class VerificationService {
   public void verifyPhone(Long userId, String otp) {
     LOGGER.info("Verifying phone for user with ID: {}", userId);
     User user =
-        userDao.getUserById(userId).orElseThrow(() -> {
-          LOGGER.warn("User not found for ID: {}", userId);
-          return new NotFoundException("User not found");
-        });
+        userDao
+            .getUserById(userId)
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("User not found for ID: {}", userId);
+                  return new NotFoundException("User not found");
+                });
 
     if (user.isPhoneVerified()) {
       LOGGER.warn("Attempt to verify already verified phone for user ID: {}", userId);
@@ -138,10 +147,11 @@ public class VerificationService {
     VerificationCode verificationCode =
         verificationDao
             .findByUserAndType(user.getId(), VerificationType.PHONE)
-            .orElseThrow(() -> {
-              LOGGER.warn("Otp not generated for user ID: {}", userId);
-              return new NotFoundException("Otp not generated");
-            });
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("Otp not generated for user ID: {}", userId);
+                  return new NotFoundException("Otp not generated");
+                });
 
     if (verificationCode.isExpired()) {
       LOGGER.warn("Otp expired for user ID: {}", userId);
@@ -162,10 +172,13 @@ public class VerificationService {
   public void verifyEmail(Long userId, String otp) {
     LOGGER.info("Verifying email for user with ID: {}", userId);
     User user =
-        userDao.getUserById(userId).orElseThrow(() -> {
-          LOGGER.warn("User not found for ID: {}", userId);
-          return new NotFoundException("User not found");
-        });
+        userDao
+            .getUserById(userId)
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("User not found for ID: {}", userId);
+                  return new NotFoundException("User not found");
+                });
 
     if (user.isEmailVerified()) {
       LOGGER.warn("Attempt to verify already verified email for user ID: {}", userId);
@@ -175,10 +188,11 @@ public class VerificationService {
     VerificationCode verificationCode =
         verificationDao
             .findByUserAndType(user.getId(), VerificationType.EMAIL)
-            .orElseThrow(() -> {
-              LOGGER.warn("OTP not generated for user ID: {}", userId);
-              return new NotFoundException("Otp not generated");
-            });
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("OTP not generated for user ID: {}", userId);
+                  return new NotFoundException("Otp not generated");
+                });
 
     if (verificationCode.isExpired()) {
       LOGGER.warn("OTP expired for user ID: {}", userId);

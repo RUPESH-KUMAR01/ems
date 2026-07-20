@@ -63,6 +63,5 @@ public class SMTPEmailService implements EmailService {
       LOGGER.error("Failed to send email to={}", to, e);
       throw new RuntimeException("Failed to send email", e);
     }
-    
   }
 }

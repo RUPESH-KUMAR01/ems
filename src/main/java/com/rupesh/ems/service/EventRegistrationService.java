@@ -6,6 +6,7 @@ import com.rupesh.ems.core.*;
 import com.rupesh.ems.db.EventDao;
 import com.rupesh.ems.db.EventRegistrationDao;
 import com.rupesh.ems.db.TeamDao;
+import com.rupesh.ems.db.TeamMemberDao;
 import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.ForbiddenException;
@@ -18,12 +19,17 @@ public class EventRegistrationService {
 
   private final EventDao eventDao;
   private final TeamDao teamDao;
+  private final TeamMemberDao teamMemberDao;
   private final EventRegistrationDao registrationDao;
 
   public EventRegistrationService(
-      EventDao eventDao, TeamDao teamDao, EventRegistrationDao registrationDao) {
+      EventDao eventDao,
+      TeamDao teamDao,
+      TeamMemberDao teamMemberDao,
+      EventRegistrationDao registrationDao) {
     this.eventDao = eventDao;
     this.teamDao = teamDao;
+    this.teamMemberDao = teamMemberDao;
     this.registrationDao = registrationDao;
   }
 
@@ -31,6 +37,14 @@ public class EventRegistrationService {
 
     Event event =
         eventDao.getEventById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
+
+    if (event.getStatus() != EventStatus.PUBLISHED) {
+      throw new BadRequestException("Event is not published");
+    }
+
+    if (java.time.Instant.now().isAfter(event.getRegistrationDeadline())) {
+      throw new BadRequestException("Registration deadline has passed");
+    }
 
     if (event.getType() == EventType.SOLO) {
 
@@ -57,9 +71,18 @@ public class EventRegistrationService {
       throw new BadRequestException("Team is required");
     }
 
-    teamDao
-        .findByEventIdAndTeamId(eventId, teamId)
-        .orElseThrow(() -> new NotFoundException("Team not found"));
+    Team team =
+        teamDao
+            .findByEventIdAndTeamId(eventId, teamId)
+            .orElseThrow(() -> new NotFoundException("Team not found"));
+
+    if (!team.getOwnerId().equals(user.getId())) {
+      throw new BadRequestException("Only the team owner can register the team");
+    }
+
+    if (teamMemberDao.countByTeamId(teamId) < event.getMinTeamSize()) {
+      throw new BadRequestException("Team size does not meet the minimum requirement");
+    }
 
     registrationDao
         .findByEventIdAndTeamId(eventId, teamId)

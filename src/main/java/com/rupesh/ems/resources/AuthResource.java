@@ -11,7 +11,6 @@ import com.rupesh.ems.api.common.MessageResponse;
 import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.service.AuthService;
 import com.rupesh.ems.service.VerificationService;
-
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
 import jakarta.validation.Valid;

@@ -27,9 +27,9 @@ import com.rupesh.ems.resources.AuthResource;
 import com.rupesh.ems.resources.EventRegistrationResource;
 import com.rupesh.ems.resources.EventResource;
 import com.rupesh.ems.resources.EventTeamResource;
-import com.rupesh.ems.resources.UserTeamResource;
 import com.rupesh.ems.resources.PaymentResource;
 import com.rupesh.ems.resources.SwaggerDocsResource;
+import com.rupesh.ems.resources.UserTeamResource;
 import com.rupesh.ems.resources.WebhookResource;
 import com.rupesh.ems.service.AdminService;
 import com.rupesh.ems.service.AuthService;
@@ -125,11 +125,13 @@ public class EventManagementSystemApplication
 
     EventService eventService = new EventService(eventDao);
     EventTeamService eventTeamService =
-        new EventTeamService(eventDao, teamDao, teamMemberDao, teamMembershipRequestDao);
-    EventTeamRequestService eventTeamRequestService =
-        new EventTeamRequestService(userDao, teamMembershipRequestDao, eventTeamService);
+        new EventTeamService(
+            eventDao, teamDao, teamMemberDao, teamMembershipRequestDao, eventRegistrationDao);
     EventRegistrationService eventRegistrationService =
-        new EventRegistrationService(eventDao, teamDao, eventRegistrationDao);
+        new EventRegistrationService(eventDao, teamDao, teamMemberDao, eventRegistrationDao);
+    EventTeamRequestService eventTeamRequestService =
+        new EventTeamRequestService(
+            userDao, teamMembershipRequestDao, eventTeamService, eventRegistrationService);
     PaymentService paymentService =
         new PaymentService(
             paymentDao, eventRegistrationDao, eventDao, configuration.getRazorpayConfig());
@@ -155,7 +157,7 @@ public class EventManagementSystemApplication
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(UserPrincipal.class));
     environment.jersey().register(RolesAllowedDynamicFeature.class);
     environment.jersey().register(ApiExceptionMapper.class);
-    environment.jersey().register(new AuthResource(authService,verificationService));
+    environment.jersey().register(new AuthResource(authService, verificationService));
     environment.jersey().register(new AdminResource(adminService));
     environment.jersey().register(new EventResource(eventService));
     environment.jersey().register(new EventTeamResource(eventTeamService, eventTeamRequestService));

@@ -24,14 +24,17 @@ public class EventTeamRequestService {
   private final UserDao userDao;
   private final TeamMembershipRequestDao teamMembershipRequestDao;
   private final EventTeamService eventTeamService;
+  private final EventRegistrationService eventRegistrationService;
 
   public EventTeamRequestService(
       UserDao userDao,
       TeamMembershipRequestDao teamMembershipRequestDao,
-      EventTeamService eventTeamService) {
+      EventTeamService eventTeamService,
+      EventRegistrationService eventRegistrationService) {
     this.userDao = userDao;
     this.teamMembershipRequestDao = teamMembershipRequestDao;
     this.eventTeamService = eventTeamService;
+    this.eventRegistrationService = eventRegistrationService;
   }
 
   public TeamMembershipResponse requestToJoinTeam(Long eventId, Long teamId, UserPrincipal user) {
@@ -39,6 +42,8 @@ public class EventTeamRequestService {
 
     Team team = eventTeamService.getEventTeam(eventId, teamId);
     if (team.getOwnerId().equals(user.getId())) {
+      LOGGER.info(
+          "UserId={} is the owner of teamId={} for eventId={}", user.getId(), teamId, eventId);
       throw new BadRequestException("You are the owner of this team");
     }
 
@@ -50,7 +55,8 @@ public class EventTeamRequestService {
 
     TeamMembershipRequest request =
         new TeamMembershipRequest(teamId, user.getId(), RequestType.JOIN_REQUEST);
-
+    LOGGER.info(
+        "UserId={} has requested to join teamId={} for eventId={}", user.getId(), teamId, eventId);
     return new TeamMembershipResponse(teamMembershipRequestDao.create(request));
   }
 
@@ -84,6 +90,7 @@ public class EventTeamRequestService {
 
   public void deleteInvitation(Long eventId, Long teamId, Long userId, UserPrincipal user) {
     eventTeamService.ensureVerified(user);
+    eventTeamService.ensureRegistrationDeadlineNotPassed(eventTeamService.getEventOrThrow(eventId));
     eventTeamService.getOwnedEventTeam(eventId, teamId, user);
 
     teamMembershipRequestDao.delete(
@@ -93,18 +100,28 @@ public class EventTeamRequestService {
 
   public void deleteRequest(Long eventId, Long teamId, UserPrincipal user) {
     eventTeamService.ensureVerified(user);
+    eventTeamService.ensureRegistrationDeadlineNotPassed(eventTeamService.getEventOrThrow(eventId));
     eventTeamService.getEventTeam(eventId, teamId);
 
     teamMembershipRequestDao.delete(
         getPendingMembershipRequest(
             teamId, user.getId(), RequestType.JOIN_REQUEST, "Request not found"));
+    LOGGER.info(
+        "UserId={} deleted request to join teamId={} for eventId={}",
+        user.getId(),
+        teamId,
+        eventId);
   }
 
   public List<TeamMembershipResponse> getPendingRequestsForTeam(
       Long eventId, Long teamId, UserPrincipal user) {
     eventTeamService.ensureVerified(user);
     eventTeamService.getOwnedEventTeam(eventId, teamId, user);
-
+    LOGGER.info(
+        "Fetching pending requests for teamId={} of eventId={} by userId={}",
+        teamId,
+        eventId,
+        user.getId());
     return teamMembershipRequestDao.getPendingRequestsByTeamId(teamId).stream()
         .map(TeamMembershipResponse::new)
         .toList();
@@ -125,12 +142,14 @@ public class EventTeamRequestService {
       RespondToRequestRequest response,
       UserPrincipal user) {
     eventTeamService.ensureVerified(user);
+    eventTeamService.ensureRegistrationDeadlineNotPassed(eventTeamService.getEventOrThrow(eventId));
     eventTeamService.getOwnedEventTeam(eventId, teamId, user);
 
     TeamMembershipRequest membershipRequest =
         getPendingMembershipRequest(teamId, userId, RequestType.JOIN_REQUEST, "Request not found");
 
     if (response.isApproved()) {
+      eventTeamService.ensureNotParticipantofEvent(eventId, userId);
       eventTeamService.ensureTeamCanAcceptMember(eventId, teamId);
       eventTeamService.ensureNotTeamMember(teamId, userId, "User is already a member of this team");
       eventTeamService.addTeamMember(teamId, userId);
@@ -142,6 +161,7 @@ public class EventTeamRequestService {
   public TeamMembershipResponse respondToInvitation(
       Long eventId, Long teamId, RespondToRequestRequest response, UserPrincipal user) {
     eventTeamService.ensureVerified(user);
+    eventTeamService.ensureRegistrationDeadlineNotPassed(eventTeamService.getEventOrThrow(eventId));
     eventTeamService.getEventTeam(eventId, teamId);
 
     TeamMembershipRequest invitation =
@@ -149,6 +169,7 @@ public class EventTeamRequestService {
             teamId, user.getId(), RequestType.INVITATION, "Invitation not found");
 
     if (response.isApproved()) {
+      eventTeamService.ensureNotParticipantofEvent(eventId, user.getId());
       eventTeamService.ensureTeamCanAcceptMember(eventId, teamId);
       eventTeamService.ensureNotTeamMember(
           teamId, user.getId(), "You are already a member of this team");
@@ -176,6 +197,10 @@ public class EventTeamRequestService {
         .filter(request -> request.getStatus() == RequestStatus.PENDING)
         .ifPresent(
             existing -> {
+              LOGGER.info(
+                  "UserId={} already has a pending membership request for teamId={}",
+                  userId,
+                  teamId);
               throw new ConflictException(message);
             });
   }
@@ -186,6 +211,14 @@ public class EventTeamRequestService {
         .findByTeamIdAndUserId(teamId, userId)
         .filter(request -> request.getType() == type)
         .filter(request -> request.getStatus() == RequestStatus.PENDING)
-        .orElseThrow(() -> new NotFoundException(notFoundMessage));
+        .orElseThrow(
+            () -> {
+              LOGGER.info(
+                  "No pending {} membership request found for userId={} in teamId={}",
+                  type,
+                  userId,
+                  teamId);
+              return new NotFoundException(notFoundMessage);
+            });
   }
 }

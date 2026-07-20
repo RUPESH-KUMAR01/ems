@@ -58,10 +58,11 @@ public class AuthService {
     User user =
         userDao
             .findByEmail(req.getEmail())
-            .orElseThrow(() -> {
-              LOGGER.warn("Attempt to login with invalid email: {}", req.getEmail());
-              return new UnauthorizedException("Invalid email or password");
-            });
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("Attempt to login with invalid email: {}", req.getEmail());
+                  return new UnauthorizedException("Invalid email or password");
+                });
 
     if (!PasswordUtil.verify(req.getPassword(), user.getPasswordHash())) {
       LOGGER.warn("Attempt to login with invalid password for user: {}", req.getEmail());

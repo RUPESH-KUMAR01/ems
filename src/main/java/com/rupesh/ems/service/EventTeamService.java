@@ -12,6 +12,7 @@ import com.rupesh.ems.core.Team;
 import com.rupesh.ems.core.TeamMember;
 import com.rupesh.ems.core.TeamMembershipRequest;
 import com.rupesh.ems.db.EventDao;
+import com.rupesh.ems.db.EventRegistrationDao;
 import com.rupesh.ems.db.TeamDao;
 import com.rupesh.ems.db.TeamMemberDao;
 import com.rupesh.ems.db.TeamMembershipRequestDao;
@@ -31,16 +32,19 @@ public class EventTeamService {
   private final TeamDao teamDao;
   private final TeamMemberDao teamMemberDao;
   private final TeamMembershipRequestDao teamMembershipRequestDao;
+  private final EventRegistrationDao eventRegistrationDao;
 
   public EventTeamService(
       EventDao eventDao,
       TeamDao teamDao,
       TeamMemberDao teamMemberDao,
-      TeamMembershipRequestDao teamMembershipRequestDao) {
+      TeamMembershipRequestDao teamMembershipRequestDao,
+      EventRegistrationDao eventRegistrationDao) {
     this.eventDao = eventDao;
     this.teamDao = teamDao;
     this.teamMemberDao = teamMemberDao;
     this.teamMembershipRequestDao = teamMembershipRequestDao;
+    this.eventRegistrationDao = eventRegistrationDao;
   }
 
   public TeamResponse createTeam(Long eventId, CreateTeamRequest request, UserPrincipal user) {
@@ -54,17 +58,28 @@ public class EventTeamService {
 
     Team team = teamDao.create(new Team(eventId, request.getName(), user.getId()));
     teamMemberDao.create(new TeamMember(user.getId(), team.getId()));
-    LOGGER.info("Team with teamId={} created for eventId={} by userId={}", team.getId(), eventId, user.getId());
+    LOGGER.info(
+        "Team with teamId={} created for eventId={} by userId={}",
+        team.getId(),
+        eventId,
+        user.getId());
 
     return new TeamResponse(team);
   }
 
   public TeamResponse updateTeam(
       Long eventId, Long teamId, UpdateTeamRequest request, UserPrincipal user) {
-        LOGGER.info("Updating teamId={} for eventId={} by userId={}", teamId, eventId, user.getId());
+    LOGGER.info("Updating teamId={} for eventId={} by userId={}", teamId, eventId, user.getId());
     ensureVerified(user);
 
+    Event event = getEventOrThrow(eventId);
+    ensureRegistrationDeadlineNotPassed(event);
+
     Team team = getOwnedEventTeam(eventId, teamId, user);
+
+    if (eventRegistrationDao.findByEventIdAndTeamId(eventId, teamId).isPresent()) {
+      throw new BadRequestException("Cannot update a registered team");
+    }
 
     if (request.getName() != null) {
       LOGGER.info("Updating team name to {}", request.getName());
@@ -73,7 +88,11 @@ public class EventTeamService {
       team.setName(request.getName());
     }
 
-    LOGGER.info("Team with teamId={} updated for eventId={} by userId={}", team.getId(), eventId, user.getId());
+    LOGGER.info(
+        "Team with teamId={} updated for eventId={} by userId={}",
+        team.getId(),
+        eventId,
+        user.getId());
     return new TeamResponse(teamDao.update(team));
   }
 
@@ -102,60 +121,107 @@ public class EventTeamService {
   public void deleteTeam(Long eventId, Long teamId, UserPrincipal user) {
     ensureVerified(user);
 
+    Event event = getEventOrThrow(eventId);
+    ensureRegistrationDeadlineNotPassed(event);
+
     Team team = getOwnedEventTeam(eventId, teamId, user);
+
+    if (eventRegistrationDao.findByEventIdAndTeamId(eventId, teamId).isPresent()) {
+      throw new BadRequestException("Cannot delete a registered team");
+    }
 
     teamMemberDao.deleteByTeamId(teamId);
     LOGGER.info("Deleted all team members for teamId={}", teamId);
     teamMembershipRequestDao.deleteByTeamId(teamId);
     LOGGER.info("Deleted all membership requests for teamId={}", teamId);
     teamDao.delete(team);
-    LOGGER.info("Team with teamId={} deleted for eventId={} by userId={}", teamId, eventId, user.getId());
+    LOGGER.info(
+        "Team with teamId={} deleted for eventId={} by userId={}", teamId, eventId, user.getId());
   }
 
   public void removeUserFromTeam(Long eventId, Long teamId, Long userId, UserPrincipal user) {
     ensureVerified(user);
 
+    Event event = getEventOrThrow(eventId);
+    ensureRegistrationDeadlineNotPassed(event);
+
     Team team = getOwnedEventTeam(eventId, teamId, user);
-    LOGGER.info("Attempting to remove userId={} from teamId={} of eventId={} by userId={}", userId, teamId, eventId, user.getId());
+    LOGGER.info(
+        "Attempting to remove userId={} from teamId={} of eventId={} by userId={}",
+        userId,
+        teamId,
+        eventId,
+        user.getId());
+
+    if (eventRegistrationDao.findByEventIdAndTeamId(eventId, teamId).isPresent()) {
+      throw new BadRequestException("Cannot remove member from a registered team");
+    }
     if (team.getOwnerId().equals(userId)) {
-      LOGGER.warn("Attempted to remove owner userId={} from teamId={} of eventId={}", userId, teamId, eventId);
+      LOGGER.warn(
+          "Attempted to remove owner userId={} from teamId={} of eventId={}",
+          userId,
+          teamId,
+          eventId);
       throw new BadRequestException("Owner cannot be removed from team");
     }
 
     TeamMember membership =
         teamMemberDao
             .findByTeamIdAndUserId(teamId, userId)
-            .orElseThrow(() -> {
-              LOGGER.warn("User with userId={} is not a member of teamId={}", userId, teamId);
-              return new NotFoundException("User is not a member of this team");
-            });
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("User with userId={} is not a member of teamId={}", userId, teamId);
+                  return new NotFoundException("User is not a member of this team");
+                });
 
     teamMemberDao.delete(membership);
-    LOGGER.info("User with userId={} removed from teamId={} of eventId={}", userId, teamId, eventId);
+    LOGGER.info(
+        "User with userId={} removed from teamId={} of eventId={}", userId, teamId, eventId);
     TeamMembershipRequest request =
         teamMembershipRequestDao.findByTeamIdAndUserId(teamId, userId).orElse(null);
     if (request != null) {
       teamMembershipRequestDao.delete(request);
-      LOGGER.info("Deleted membership request for userId={} from teamId={} of eventId={}", userId, teamId, eventId);
+      LOGGER.info(
+          "Deleted membership request for userId={} from teamId={} of eventId={}",
+          userId,
+          teamId,
+          eventId);
     }
   }
 
   public TeamResponse transferOwnership(
       Long eventId, Long teamId, Long newOwnerId, UserPrincipal user) {
-        LOGGER.info("Transferring ownership of teamId={} for eventId={} to newOwnerId={} by userId={}", teamId, eventId, newOwnerId, user.getId());
+    LOGGER.info(
+        "Transferring ownership of teamId={} for eventId={} to newOwnerId={} by userId={}",
+        teamId,
+        eventId,
+        newOwnerId,
+        user.getId());
     ensureVerified(user);
+
+    Event event = getEventOrThrow(eventId);
+    ensureRegistrationDeadlineNotPassed(event);
 
     Team team = getOwnedEventTeam(eventId, teamId, user);
 
     if (team.getOwnerId().equals(newOwnerId)) {
-      LOGGER.warn("Attempted to transfer ownership of teamId={} for eventId={} to the same owner userId={}", teamId, eventId, newOwnerId);
+      LOGGER.warn(
+          "Attempted to transfer ownership of teamId={} for eventId={} to the same owner userId={}",
+          teamId,
+          eventId,
+          newOwnerId);
       throw new BadRequestException("You are already the owner of this team");
     }
 
     ensureTeamMember(teamId, newOwnerId, "New owner must be a member of the team");
 
     team.setOwnerId(newOwnerId);
-    LOGGER.info("Ownership of teamId={} for eventId={} transferred to newOwnerId={} by userId={}", teamId, eventId, newOwnerId, user.getId());
+    LOGGER.info(
+        "Ownership of teamId={} for eventId={} transferred to newOwnerId={} by userId={}",
+        teamId,
+        eventId,
+        newOwnerId,
+        user.getId());
     return new TeamResponse(teamDao.update(team));
   }
 
@@ -170,34 +236,37 @@ public class EventTeamService {
   public Team getEventTeam(Long eventId, Long teamId) {
     return teamDao
         .findByEventIdAndTeamId(eventId, teamId)
-        .orElseThrow(() -> {
-          LOGGER.warn("Team with teamId={} not found for eventId={}", teamId, eventId);
-          return new NotFoundException("Team not found");
-        });
+        .orElseThrow(
+            () -> {
+              LOGGER.warn("Team with teamId={} not found for eventId={}", teamId, eventId);
+              return new NotFoundException("Team not found");
+            });
   }
 
   public Team getOwnedEventTeam(Long eventId, Long teamId, UserPrincipal user) {
     return teamDao
         .findByEventIdAndTeamId(eventId, teamId)
         .filter(team -> team.getOwnerId().equals(user.getId()))
-        .orElseThrow(() -> {
-          LOGGER.warn(
-              "User with userId={} is not the owner of teamId={} for eventId={}",
-              user.getId(),
-              teamId,
-              eventId);
-          return new ForbiddenException("You are not the owner of this team");
-        });
+        .orElseThrow(
+            () -> {
+              LOGGER.warn(
+                  "User with userId={} is not the owner of teamId={} for eventId={}",
+                  user.getId(),
+                  teamId,
+                  eventId);
+              return new ForbiddenException("You are not the owner of this team");
+            });
   }
 
   public Event getEventOrThrow(Long eventId) {
     LOGGER.info("Fetching eventId={}", eventId);
     return eventDao
         .getEventById(eventId)
-        .orElseThrow(() -> {
-          LOGGER.warn("Event with eventId={} not found", eventId);
-          return new NotFoundException("Event not found");
-        });
+        .orElseThrow(
+            () -> {
+              LOGGER.warn("Event with eventId={} not found", eventId);
+              return new NotFoundException("Event not found");
+            });
   }
 
   public void ensureVerified(UserPrincipal user) {
@@ -215,6 +284,11 @@ public class EventTeamService {
     ensureTeamEvent(event);
     ensureRegistrationOpen(event);
     if (teamMemberDao.countByTeamId(team.getId()) >= event.getMaxTeamSize()) {
+      LOGGER.warn(
+          "Team with teamId={} for eventId={} has reached its member limit of {}",
+          teamId,
+          eventId,
+          event.getMaxTeamSize());
       throw new BadRequestException("Team member limit reached");
     }
   }
@@ -224,6 +298,7 @@ public class EventTeamService {
         .findByTeamIdAndUserId(teamId, userId)
         .ifPresent(
             existing -> {
+              LOGGER.warn("User with userId={} is already a member of teamId={}", userId, teamId);
               throw new ConflictException(message);
             });
   }
@@ -235,10 +310,11 @@ public class EventTeamService {
   private void ensureTeamMember(Long teamId, Long userId, String message) {
     teamMemberDao
         .findByTeamIdAndUserId(teamId, userId)
-        .orElseThrow(() -> {
-          LOGGER.warn("User with userId={} is not a member of teamId={}", userId, teamId);
-          return new ForbiddenException(message);
-        });
+        .orElseThrow(
+            () -> {
+              LOGGER.warn("User with userId={} is not a member of teamId={}", userId, teamId);
+              return new ForbiddenException(message);
+            });
   }
 
   private void ensureTeamEvent(Event event) {
@@ -248,12 +324,16 @@ public class EventTeamService {
     }
   }
 
-  private void ensureRegistrationOpen(Event event) {
+  public void ensureRegistrationOpen(Event event) {
     if (event.getStatus() != EventStatus.PUBLISHED) {
       LOGGER.warn("Event with eventId={} is not published", event.getId());
       throw new BadRequestException("Event registration is not open");
     }
 
+    ensureRegistrationDeadlineNotPassed(event);
+  }
+
+  public void ensureRegistrationDeadlineNotPassed(Event event) {
     if (!Instant.now().isBefore(event.getRegistrationDeadline())) {
       LOGGER.warn("Event with eventId={} has passed its registration deadline", event.getId());
       throw new BadRequestException("Event registration deadline has passed");
@@ -271,12 +351,15 @@ public class EventTeamService {
             });
   }
 
-  private void ensureNotParticipantofEvent(Long eventId, Long userId) {
-    teamMemberDao.getMembershipByEventIdAndUserId(eventId, userId).ifPresent(
-        existing -> {
-          LOGGER.warn("User with userId={} is already a participant of eventId={}", userId, eventId);
-          throw new ConflictException("You are already a participant of this event");
-        });
+  public void ensureNotParticipantofEvent(Long eventId, Long userId) {
+    teamMemberDao
+        .getMembershipByEventIdAndUserId(eventId, userId)
+        .ifPresent(
+            existing -> {
+              LOGGER.warn(
+                  "User with userId={} is already a participant of eventId={}", userId, eventId);
+              throw new ConflictException("You are already a participant of this event");
+            });
   }
 
   private void ensureTeamNameNotBlank(String name) {

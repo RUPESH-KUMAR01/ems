@@ -133,7 +133,7 @@ public class EventService {
     LOGGER.info("Publishing eventId={} by userId={}", eventId, user.getId());
 
     Event event = getOwnedEvent(eventId, user);
-    if(Instant.now().isAfter(event.getRegistrationDeadline())) {
+    if (Instant.now().isAfter(event.getRegistrationDeadline())) {
       LOGGER.warn("Event with eventId={} cannot be published after it has started", eventId);
       throw new BadRequestException("Event cannot be published after it has started");
     }
@@ -146,7 +146,7 @@ public class EventService {
     LOGGER.info("Cancelling eventId={} by userId={}", eventId, user.getId());
 
     Event event = getOwnedEvent(eventId, user);
-    if(Instant.now().isAfter(event.getStartTime())) {
+    if (Instant.now().isAfter(event.getStartTime())) {
       LOGGER.warn("Event with eventId={} cannot be cancelled after it has started", eventId);
       throw new BadRequestException("Event cannot be cancelled after it has started");
     }
@@ -159,7 +159,7 @@ public class EventService {
     LOGGER.info("Completing eventId={} by userId={}", eventId, user.getId());
 
     Event event = getOwnedEvent(eventId, user);
-    if(Instant.now().isBefore(event.getEndTime())) {
+    if (Instant.now().isBefore(event.getEndTime())) {
       LOGGER.warn("Event with eventId={} cannot be completed before its end time", eventId);
       throw new BadRequestException("Event cannot be completed before its end time");
     }
@@ -210,8 +210,7 @@ public class EventService {
     if (isDeleted) {
       LOGGER.info("Event with eventId={} deleted successfully by userId={}", eventId, user.getId());
     } else {
-      LOGGER.warn(
-          "Failed to delete event with eventId={} by userId={}", eventId, user.getId());
+      LOGGER.warn("Failed to delete event with eventId={} by userId={}", eventId, user.getId());
       throw new NotFoundException("Event not found");
     }
   }
@@ -222,10 +221,11 @@ public class EventService {
     return eventDao
         .getEventById(eventId)
         .filter(event -> event.getCreatedBy().equals(user.getId()))
-        .orElseThrow(() -> {
-          LOGGER.warn("Event with eventId={} not found for userId={}", eventId, user.getId());
-          return new NotFoundException("Event not found");
-        });
+        .orElseThrow(
+            () -> {
+              LOGGER.warn("Event with eventId={} not found for userId={}", eventId, user.getId());
+              return new NotFoundException("Event not found");
+            });
   }
 
   private void ensureEventNameAvailable(Long ownerId, String name, Long currentEventId) {
@@ -236,8 +236,7 @@ public class EventService {
         .filter(event -> currentEventId == null || !event.getId().equals(currentEventId))
         .ifPresent(
             event -> {
-              LOGGER.warn(
-                  "Event with name={} already exists for userId={}", name, ownerId);
+              LOGGER.warn("Event with name={} already exists for userId={}", name, ownerId);
               throw new ConflictException("Event with same name already exists");
             });
   }

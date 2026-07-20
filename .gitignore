@@ -22,3 +22,5 @@ target/
 docs/
 
 .devlog.toml
+
+.agents
