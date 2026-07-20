@@ -13,6 +13,7 @@ import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -44,6 +45,8 @@ public class EventService {
 
   public EventResponse createEvent(UserPrincipal user, CreateEventRequest request) {
 
+    LOGGER.info("Creating event={} by userId={}", request.getName(), user.getId());
+
     ensureEventNameAvailable(user.getId(), request.getName(), null);
 
     Event event =
@@ -62,11 +65,13 @@ public class EventService {
             request.getEndTime());
 
     validateEvent(event);
-
-    return new EventResponse(eventDao.create(event));
+    event = eventDao.create(event);
+    LOGGER.info("Event created successfully with eventId={}", event.getId());
+    return new EventResponse(event);
   }
 
   public EventResponse updateEvent(UserPrincipal user, Long eventId, UpdateEventRequest request) {
+    LOGGER.info("Updating eventId={} by userId={}", eventId, user.getId());
 
     Event event = getOwnedEvent(eventId, user);
     ensureEventCanBeUpdated(event);
@@ -120,45 +125,62 @@ public class EventService {
     }
 
     validateEvent(event);
-
+    LOGGER.info("Event with eventId={} updated successfully", event.getId());
     return new EventResponse(eventDao.update(event));
   }
 
   public EventResponse publishEvent(Long eventId, UserPrincipal user) {
+    LOGGER.info("Publishing eventId={} by userId={}", eventId, user.getId());
 
     Event event = getOwnedEvent(eventId, user);
+    if(Instant.now().isAfter(event.getRegistrationDeadline())) {
+      LOGGER.warn("Event with eventId={} cannot be published after it has started", eventId);
+      throw new BadRequestException("Event cannot be published after it has started");
+    }
     transitionEvent(event, EventStatus.PUBLISHED);
 
     return new EventResponse(eventDao.update(event));
   }
 
   public EventResponse cancelEvent(Long eventId, UserPrincipal user) {
+    LOGGER.info("Cancelling eventId={} by userId={}", eventId, user.getId());
 
     Event event = getOwnedEvent(eventId, user);
+    if(Instant.now().isAfter(event.getStartTime())) {
+      LOGGER.warn("Event with eventId={} cannot be cancelled after it has started", eventId);
+      throw new BadRequestException("Event cannot be cancelled after it has started");
+    }
     transitionEvent(event, EventStatus.CANCELLED);
 
     return new EventResponse(eventDao.update(event));
   }
 
   public EventResponse completeEvent(Long eventId, UserPrincipal user) {
+    LOGGER.info("Completing eventId={} by userId={}", eventId, user.getId());
 
     Event event = getOwnedEvent(eventId, user);
+    if(Instant.now().isBefore(event.getEndTime())) {
+      LOGGER.warn("Event with eventId={} cannot be completed before its end time", eventId);
+      throw new BadRequestException("Event cannot be completed before its end time");
+    }
     transitionEvent(event, EventStatus.COMPLETED);
 
     return new EventResponse(eventDao.update(event));
   }
 
   public EventResponse getEventById(Long eventId) {
+    LOGGER.info("Fetching eventId={}", eventId);
     Event event =
         eventDao.getEventById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
     if (!isPubliclyVisible(event)) {
+      LOGGER.warn("Event with eventId={} is not publicly visible", eventId);
       throw new NotFoundException("Event not found");
     }
     return new EventResponse(event);
   }
 
   public List<EventResponse> getEventsByCreatedBy(UserPrincipal user) {
-
+    LOGGER.info("Fetching events for userId={}", user.getId());
     return eventDao.getEventsByCreatedBy(user.getId()).stream().map(EventResponse::new).toList();
   }
 
@@ -176,6 +198,7 @@ public class EventService {
   }
 
   public List<EventResponse> getVisibleEvents() {
+    LOGGER.info("Fetching visible events");
     return eventDao.getVisibleEvents().stream().map(EventResponse::new).toList();
   }
 
@@ -183,30 +206,45 @@ public class EventService {
 
     Event event = getOwnedEvent(eventId, user);
 
-    eventDao.delete(event);
+    boolean isDeleted = eventDao.delete(event);
+    if (isDeleted) {
+      LOGGER.info("Event with eventId={} deleted successfully by userId={}", eventId, user.getId());
+    } else {
+      LOGGER.warn(
+          "Failed to delete event with eventId={} by userId={}", eventId, user.getId());
+      throw new NotFoundException("Event not found");
+    }
   }
 
   private Event getOwnedEvent(Long eventId, UserPrincipal user) {
 
+    LOGGER.info("Fetching owned event eventId={} by userId={}", eventId, user.getId());
     return eventDao
         .getEventById(eventId)
         .filter(event -> event.getCreatedBy().equals(user.getId()))
-        .orElseThrow(() -> new NotFoundException("Event not found"));
+        .orElseThrow(() -> {
+          LOGGER.warn("Event with eventId={} not found for userId={}", eventId, user.getId());
+          return new NotFoundException("Event not found");
+        });
   }
 
   private void ensureEventNameAvailable(Long ownerId, String name, Long currentEventId) {
 
+    LOGGER.info("Checking availability of event name={} for userId={}", name, ownerId);
     eventDao
         .findByNameAndCreatedBy(ownerId, name)
         .filter(event -> currentEventId == null || !event.getId().equals(currentEventId))
         .ifPresent(
             event -> {
+              LOGGER.warn(
+                  "Event with name={} already exists for userId={}", name, ownerId);
               throw new ConflictException("Event with same name already exists");
             });
   }
 
   private void validateEvent(Event event) {
 
+    LOGGER.info("Validating event={}", event.getName());
     if (event.getRegistrationDeadline() == null) {
       throw new BadRequestException("Registration deadline is required");
     }
@@ -254,22 +292,42 @@ public class EventService {
         throw new BadRequestException("Minimum team size cannot exceed maximum team size");
       }
     }
+    LOGGER.info("Event={} validation successful", event.getName());
   }
 
   private void ensureEventCanBeUpdated(Event event) {
     if (event.getStatus() == EventStatus.CANCELLED || event.getStatus() == EventStatus.COMPLETED) {
+      LOGGER.warn(
+          "Event with eventId={} cannot be updated as it is in status={}",
+          event.getId(),
+          event.getStatus());
       throw new BadRequestException("Cancelled or completed events cannot be updated");
     }
   }
 
   private void transitionEvent(Event event, EventStatus newStatus) {
+    LOGGER.info(
+        "Transitioning eventId={} from status={} to status={}",
+        event.getId(),
+        event.getStatus(),
+        newStatus);
     EventStatus currentStatus = event.getStatus();
     if (!ALLOWED_STATUS_TRANSITIONS.getOrDefault(currentStatus, Set.of()).contains(newStatus)) {
+      LOGGER.warn(
+          "Invalid event status transition from {} to {} for eventId={}",
+          currentStatus,
+          newStatus,
+          event.getId());
       throw new BadRequestException(
           "Invalid event status transition from %s to %s".formatted(currentStatus, newStatus));
     }
 
     validateEvent(event);
+    LOGGER.info(
+        "Event with eventId={} transitioned from status={} to status={}",
+        event.getId(),
+        currentStatus,
+        newStatus);
     event.setStatus(newStatus);
   }
 

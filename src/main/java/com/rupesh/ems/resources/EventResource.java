@@ -32,6 +32,7 @@ public class EventResource {
   @UnitOfWork
   @RolesAllowed("MODERATOR")
   public EventResponse createEvent(@Auth UserPrincipal user, @Valid CreateEventRequest request) {
+    LOGGER.info("Creating event={} by userId={}", request.getName(), user.getId());
     return eventService.createEvent(user, request);
   }
 
@@ -43,6 +44,7 @@ public class EventResource {
       @Auth UserPrincipal user,
       @PathParam("eventId") Long eventId,
       @Valid UpdateEventRequest request) {
+    LOGGER.info("Updating eventId={} by userId={}", eventId, user.getId());
     return eventService.updateEvent(user, eventId, request);
   }
 
@@ -51,6 +53,7 @@ public class EventResource {
   @RolesAllowed("MODERATOR")
   @UnitOfWork
   public MessageResponse deleteEvent(@Auth UserPrincipal user, @PathParam("eventId") Long eventId) {
+    LOGGER.info("Deleting eventId={} by userId={}", eventId, user.getId());
     eventService.deleteEvent(user, eventId);
     return new MessageResponse("Event deleted successfully");
   }
@@ -59,6 +62,7 @@ public class EventResource {
   @Path("/{eventId}")
   @UnitOfWork
   public EventResponse getEventById(@PathParam("eventId") Long eventId) {
+    LOGGER.info("Fetching eventId={}", eventId);
     return eventService.getEventById(eventId);
   }
 
@@ -67,12 +71,14 @@ public class EventResource {
   @UnitOfWork
   @RolesAllowed("MODERATOR")
   public List<EventResponse> getMyEvents(@Auth UserPrincipal user) {
+    LOGGER.info("Fetching events for userId={}", user.getId());
     return eventService.getEventsByCreatedBy(user);
   }
 
   @GET
   @UnitOfWork
   public List<EventResponse> getVisibleEvents() {
+    LOGGER.info("Fetching visible events");
     return eventService.getVisibleEvents();
   }
 
@@ -81,6 +87,7 @@ public class EventResource {
   @RolesAllowed("MODERATOR")
   @UnitOfWork
   public EventResponse publishEvent(@Auth UserPrincipal user, @PathParam("eventId") Long eventId) {
+    LOGGER.info("Publishing eventId={} by userId={}", eventId, user.getId());
     return eventService.publishEvent(eventId, user);
   }
 
@@ -89,6 +96,7 @@ public class EventResource {
   @RolesAllowed("MODERATOR")
   @UnitOfWork
   public EventResponse cancelEvent(@Auth UserPrincipal user, @PathParam("eventId") Long eventId) {
+    LOGGER.info("Cancelling eventId={} by userId={}", eventId, user.getId());
     return eventService.cancelEvent(eventId, user);
   }
 
@@ -97,6 +105,7 @@ public class EventResource {
   @Path("/{eventId}/complete")
   @UnitOfWork
   public EventResponse completeEvent(@Auth UserPrincipal user, @PathParam("eventId") Long eventId) {
+    LOGGER.info("Completing eventId={} by userId={}", eventId, user.getId());
     return eventService.completeEvent(eventId, user);
   }
 }
