@@ -20,13 +20,11 @@ public class AuthService {
 
   private final UserDao userDao;
   private final JWTService jwtService;
-  private final VerificationService verificationService;
 
   public AuthService(
-      UserDao userDao, JWTService jwtService, VerificationService verificationService) {
+      UserDao userDao, JWTService jwtService) {
     this.userDao = userDao;
     this.jwtService = jwtService;
-    this.verificationService = verificationService;
   }
 
   public RegisterResponse register(CreateUserRequest req) {

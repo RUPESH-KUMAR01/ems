@@ -9,10 +9,6 @@ public class CreateTeamRequest {
     this.name = name;
   }
 
-  public CreateTeamRequest(String name, Integer maxMembers) {
-    this.name = name;
-  }
-
   public CreateTeamRequest() {}
 
   public String getName() {

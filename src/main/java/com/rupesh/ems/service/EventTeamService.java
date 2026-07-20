@@ -8,6 +8,7 @@ import com.rupesh.ems.auth.UserPrincipal;
 import com.rupesh.ems.core.Event;
 import com.rupesh.ems.core.EventStatus;
 import com.rupesh.ems.core.EventType;
+import com.rupesh.ems.core.RegistrationStatus;
 import com.rupesh.ems.core.Team;
 import com.rupesh.ems.core.TeamMember;
 import com.rupesh.ems.core.TeamMembershipRequest;
@@ -76,10 +77,7 @@ public class EventTeamService {
     ensureRegistrationDeadlineNotPassed(event);
 
     Team team = getOwnedEventTeam(eventId, teamId, user);
-
-    if (eventRegistrationDao.findByEventIdAndTeamId(eventId, teamId).isPresent()) {
-      throw new BadRequestException("Cannot update a registered team");
-    }
+    ensureTeamRegistrationNotCompleted(eventId, teamId);
 
     if (request.getName() != null) {
       LOGGER.info("Updating team name to {}", request.getName());
@@ -125,10 +123,7 @@ public class EventTeamService {
     ensureRegistrationDeadlineNotPassed(event);
 
     Team team = getOwnedEventTeam(eventId, teamId, user);
-
-    if (eventRegistrationDao.findByEventIdAndTeamId(eventId, teamId).isPresent()) {
-      throw new BadRequestException("Cannot delete a registered team");
-    }
+    ensureTeamRegistrationNotCompleted(eventId, teamId);
 
     teamMemberDao.deleteByTeamId(teamId);
     LOGGER.info("Deleted all team members for teamId={}", teamId);
@@ -153,9 +148,8 @@ public class EventTeamService {
         eventId,
         user.getId());
 
-    if (eventRegistrationDao.findByEventIdAndTeamId(eventId, teamId).isPresent()) {
-      throw new BadRequestException("Cannot remove member from a registered team");
-    }
+    ensureTeamRegistrationNotCompleted(eventId, teamId);
+
     if (team.getOwnerId().equals(userId)) {
       LOGGER.warn(
           "Attempted to remove owner userId={} from teamId={} of eventId={}",
@@ -203,6 +197,7 @@ public class EventTeamService {
     ensureRegistrationDeadlineNotPassed(event);
 
     Team team = getOwnedEventTeam(eventId, teamId, user);
+    ensureTeamRegistrationNotCompleted(eventId, teamId);
 
     if (team.getOwnerId().equals(newOwnerId)) {
       LOGGER.warn(
@@ -283,6 +278,8 @@ public class EventTeamService {
     Team team = getEventTeam(eventId, teamId);
     ensureTeamEvent(event);
     ensureRegistrationOpen(event);
+    ensureTeamRegistrationNotCompleted(eventId, teamId);
+
     if (teamMemberDao.countByTeamId(team.getId()) >= event.getMaxTeamSize()) {
       LOGGER.warn(
           "Team with teamId={} for eventId={} has reached its member limit of {}",
@@ -304,6 +301,16 @@ public class EventTeamService {
   }
 
   public void addTeamMember(Long teamId, Long userId) {
+    Team team =
+        teamDao
+            .getTeamById(teamId)
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("Team with teamId={} not found", teamId);
+                  return new NotFoundException("Team not found");
+                });
+    ensureTeamRegistrationNotCompleted(team.getEventId(), teamId);
+
     teamMemberDao.create(new TeamMember(userId, teamId));
   }
 
@@ -367,5 +374,19 @@ public class EventTeamService {
       LOGGER.warn("Attempted to set a blank team name");
       throw new BadRequestException("Team name is required");
     }
+  }
+
+  public void ensureTeamRegistrationNotCompleted(Long eventId, Long teamId) {
+    eventRegistrationDao
+        .findByEventIdAndTeamId(eventId, teamId)
+        .filter(existing -> existing.getStatus() == RegistrationStatus.REGISTERED)
+        .ifPresent(
+            existing -> {
+              LOGGER.warn(
+                  "Team with teamId={} for eventId={} has already completed registration",
+                  teamId,
+                  eventId);
+              throw new BadRequestException("Team registration is already completed");
+            });
   }
 }

@@ -119,7 +119,7 @@ public class EventManagementSystemApplication
     SmsService smsService = new ConsoleSmsService();
     VerificationService verificationService =
         new VerificationService(verificationDao, userDao, emailService, smsService);
-    AuthService authService = new AuthService(userDao, jwtService, verificationService);
+    AuthService authService = new AuthService(userDao, jwtService);
     AdminService adminService =
         new AdminService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao, eventDao);
 
