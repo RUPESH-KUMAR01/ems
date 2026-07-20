@@ -51,6 +51,7 @@ public class EventTeamResource {
       @PathParam("eventId") Long eventId,
       @Valid CreateTeamRequest request,
       @Auth UserPrincipal user) {
+    LOGGER.info("Creating team={} for eventId={} by userId={}", request.getName(), eventId, user.getId());
     return eventTeamService.createTeam(eventId, request, user);
   }
 
@@ -58,6 +59,7 @@ public class EventTeamResource {
   @Path("/events/{eventId}/teams")
   @UnitOfWork
   public List<TeamResponse> getTeamsForEvent(@PathParam("eventId") Long eventId) {
+    LOGGER.info("Fetching teams for eventId={}", eventId);
     return eventTeamService.getTeamsForEvent(eventId);
   }
 
@@ -65,6 +67,7 @@ public class EventTeamResource {
   @Path("/teams/me")
   @UnitOfWork
   public List<TeamResponse> getTeamsForUser(@Auth UserPrincipal user) {
+    LOGGER.info("Fetching teams for userId={}", user.getId());
     return eventTeamService.getTeamsForUser(user);
   }
 
@@ -75,6 +78,7 @@ public class EventTeamResource {
       @PathParam("eventId") Long eventId,
       @PathParam("teamId") Long teamId,
       @Auth UserPrincipal user) {
+    LOGGER.info("Fetching teamId={} for eventId={} by userId={}", teamId, eventId, user.getId());
     return eventTeamService.getTeamById(eventId, teamId, user);
   }
 
@@ -86,6 +90,7 @@ public class EventTeamResource {
       @PathParam("teamId") Long teamId,
       @Valid UpdateTeamRequest request,
       @Auth UserPrincipal user) {
+        LOGGER.info("Updating teamId={} for eventId={} by userId={}", teamId, eventId, user.getId());
     return eventTeamService.updateTeam(eventId, teamId, request, user);
   }
 
@@ -96,6 +101,7 @@ public class EventTeamResource {
       @PathParam("eventId") Long eventId,
       @PathParam("teamId") Long teamId,
       @Auth UserPrincipal user) {
+        LOGGER.info("Deleting teamId={} for eventId={} by userId={}", teamId, eventId, user.getId());
     eventTeamService.deleteTeam(eventId, teamId, user);
     return new MessageResponse("Team deleted successfully");
   }
@@ -107,6 +113,7 @@ public class EventTeamResource {
       @PathParam("eventId") Long eventId,
       @PathParam("teamId") Long teamId,
       @Auth UserPrincipal user) {
+    LOGGER.info("Fetching members for teamId={} of eventId={} by userId={}", teamId, eventId, user.getId());
     return eventTeamService.getTeamMembers(eventId, teamId, user);
   }
 
@@ -118,6 +125,7 @@ public class EventTeamResource {
       @PathParam("teamId") Long teamId,
       @PathParam("userId") Long userId,
       @Auth UserPrincipal user) {
+    LOGGER.info("Removing userId={} from teamId={} of eventId={} by userId={}", userId, teamId, eventId, user.getId());
     eventTeamService.removeUserFromTeam(eventId, teamId, userId, user);
     return new MessageResponse("User removed from team successfully");
   }
@@ -130,6 +138,7 @@ public class EventTeamResource {
       @PathParam("teamId") Long teamId,
       @PathParam("userId") Long userId,
       @Auth UserPrincipal user) {
+    LOGGER.info("Transferring ownership of teamId={} for eventId={} to newOwnerId={} by userId={}", teamId, eventId, userId, user.getId());
     return eventTeamService.transferOwnership(eventId, teamId, userId, user);
   }
 
@@ -140,6 +149,7 @@ public class EventTeamResource {
       @PathParam("eventId") Long eventId,
       @PathParam("teamId") Long teamId,
       @Auth UserPrincipal user) {
+    
     return eventTeamRequestService.requestToJoinTeam(eventId, teamId, user);
   }
 

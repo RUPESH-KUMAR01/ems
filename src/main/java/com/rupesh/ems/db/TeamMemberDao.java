@@ -77,4 +77,20 @@ public class TeamMemberDao extends AbstractDAO<TeamMember> {
         .setParameter("teamId", teamId)
         .executeUpdate();
   }
+
+  public Optional<TeamMember> getMembershipByEventIdAndUserId(Long eventId, Long userId) {
+    return currentSession()
+        .createQuery(
+            """
+                SELECT tm
+                FROM TeamMember tm
+                JOIN Team t
+                  ON t.id = tm.teamId
+                WHERE t.eventId = :eventId AND tm.userId = :userId
+                """,
+            TeamMember.class)
+        .setParameter("eventId", eventId)
+        .setParameter("userId", userId)
+        .uniqueResultOptional();
+  }
 }

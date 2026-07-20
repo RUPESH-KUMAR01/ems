@@ -27,6 +27,7 @@ public class BootstrapAdminService {
     boolean isEnabled = bootstrapAdminConfiguration.isEnabled();
     String phone = bootstrapAdminConfiguration.getPhone();
     if (!isEnabled) {
+      LOGGER.info("Bootstrap admin creation is disabled. Skipping admin creation.");
       return;
     }
     Optional<User> existingUser = userDao.findByEmail(email);
@@ -36,6 +37,7 @@ public class BootstrapAdminService {
       userDao.update(user);
       user.setEmailVerified(true);
       user.setPhoneVerified(true);
+      LOGGER.info("Admin user with email={} already exists. Updated role to ADMIN.", email);
       return;
     }
 
@@ -45,5 +47,6 @@ public class BootstrapAdminService {
     user.setPhoneVerified(true);
 
     userDao.create(user);
+    LOGGER.info("Bootstrap admin user created with email={}", email);
   }
 }
