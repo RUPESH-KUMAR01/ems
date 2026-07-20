@@ -943,10 +943,6 @@ components:
       properties:
         name:
           type: string
-        maxMembers:
-          type: integer
-          minimum: 1
-          default: 1
     UpdateTeamRequest:
       type: object
       properties:

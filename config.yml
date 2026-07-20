@@ -43,7 +43,7 @@ bootstrapadmin:
   enabled: true
   name: "admin"
   email: "admin@ems.com"
-  phone: "123"
+  phone: "1234567891"
   password: "super-secret"
 
 emailservice:

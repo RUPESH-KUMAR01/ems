@@ -28,7 +28,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/api")
+@Path("/api/events/{eventId}/teams")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RolesAllowed("USER")
@@ -45,7 +45,6 @@ public class EventTeamResource {
   }
 
   @POST
-  @Path("/events/{eventId}/teams")
   @UnitOfWork
   public TeamResponse createTeam(
       @PathParam("eventId") Long eventId,
@@ -56,7 +55,6 @@ public class EventTeamResource {
   }
 
   @GET
-  @Path("/events/{eventId}/teams")
   @UnitOfWork
   public List<TeamResponse> getTeamsForEvent(@PathParam("eventId") Long eventId) {
     LOGGER.info("Fetching teams for eventId={}", eventId);
@@ -64,15 +62,7 @@ public class EventTeamResource {
   }
 
   @GET
-  @Path("/teams/me")
-  @UnitOfWork
-  public List<TeamResponse> getTeamsForUser(@Auth UserPrincipal user) {
-    LOGGER.info("Fetching teams for userId={}", user.getId());
-    return eventTeamService.getTeamsForUser(user);
-  }
-
-  @GET
-  @Path("/events/{eventId}/teams/{teamId}")
+  @Path("/{teamId}")
   @UnitOfWork
   public TeamResponse getTeamById(
       @PathParam("eventId") Long eventId,
@@ -83,7 +73,7 @@ public class EventTeamResource {
   }
 
   @PUT
-  @Path("/events/{eventId}/teams/{teamId}")
+  @Path("/{teamId}")
   @UnitOfWork
   public TeamResponse updateTeam(
       @PathParam("eventId") Long eventId,
@@ -95,7 +85,7 @@ public class EventTeamResource {
   }
 
   @DELETE
-  @Path("/events/{eventId}/teams/{teamId}")
+  @Path("/{teamId}")
   @UnitOfWork
   public MessageResponse deleteTeam(
       @PathParam("eventId") Long eventId,
@@ -107,7 +97,7 @@ public class EventTeamResource {
   }
 
   @GET
-  @Path("/events/{eventId}/teams/{teamId}/members")
+  @Path("/{teamId}/members")
   @UnitOfWork
   public List<UserResponse> getTeamMembers(
       @PathParam("eventId") Long eventId,
@@ -118,7 +108,7 @@ public class EventTeamResource {
   }
 
   @DELETE
-  @Path("/events/{eventId}/teams/{teamId}/members/{userId}")
+  @Path("/{teamId}/members/{userId}")
   @UnitOfWork
   public MessageResponse removeUserFromTeam(
       @PathParam("eventId") Long eventId,
@@ -131,7 +121,7 @@ public class EventTeamResource {
   }
 
   @PUT
-  @Path("/events/{eventId}/teams/{teamId}/owner/{userId}")
+  @Path("/{teamId}/owner/{userId}")
   @UnitOfWork
   public TeamResponse transferOwnership(
       @PathParam("eventId") Long eventId,
@@ -143,7 +133,7 @@ public class EventTeamResource {
   }
 
   @POST
-  @Path("/events/{eventId}/teams/{teamId}/requests")
+  @Path("/{teamId}/requests")
   @UnitOfWork
   public TeamMembershipResponse requestToJoinTeam(
       @PathParam("eventId") Long eventId,
@@ -154,7 +144,7 @@ public class EventTeamResource {
   }
 
   @DELETE
-  @Path("/events/{eventId}/teams/{teamId}/requests")
+  @Path("/{teamId}/requests")
   @UnitOfWork
   public MessageResponse deleteRequest(
       @PathParam("eventId") Long eventId,
@@ -165,14 +155,7 @@ public class EventTeamResource {
   }
 
   @GET
-  @Path("/team-requests/me")
-  @UnitOfWork
-  public List<TeamMembershipResponse> getPendingRequestsForUser(@Auth UserPrincipal user) {
-    return eventTeamRequestService.getPendingRequestsForUser(user);
-  }
-
-  @GET
-  @Path("/events/{eventId}/teams/{teamId}/requests")
+  @Path("/{teamId}/requests")
   @UnitOfWork
   public List<TeamMembershipResponse> getPendingRequestsForTeam(
       @PathParam("eventId") Long eventId,
@@ -182,7 +165,7 @@ public class EventTeamResource {
   }
 
   @PUT
-  @Path("/events/{eventId}/teams/{teamId}/requests/{userId}")
+  @Path("/{teamId}/requests/{userId}")
   @UnitOfWork
   public TeamMembershipResponse respondToRequest(
       @PathParam("eventId") Long eventId,
@@ -194,7 +177,7 @@ public class EventTeamResource {
   }
 
   @POST
-  @Path("/events/{eventId}/teams/{teamId}/invitations")
+  @Path("/{teamId}/invitations")
   @UnitOfWork
   public TeamMembershipResponse inviteUserToTeam(
       @PathParam("eventId") Long eventId,
@@ -205,7 +188,7 @@ public class EventTeamResource {
   }
 
   @DELETE
-  @Path("/events/{eventId}/teams/{teamId}/invitations/{userId}")
+  @Path("/{teamId}/invitations/{userId}")
   @UnitOfWork
   public MessageResponse deleteInvitation(
       @PathParam("eventId") Long eventId,
@@ -217,7 +200,7 @@ public class EventTeamResource {
   }
 
   @PUT
-  @Path("/events/{eventId}/teams/{teamId}/invitations")
+  @Path("/{teamId}/invitations")
   @UnitOfWork
   public TeamMembershipResponse respondToInvitation(
       @PathParam("eventId") Long eventId,

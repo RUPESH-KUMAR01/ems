@@ -27,6 +27,7 @@ import com.rupesh.ems.resources.AuthResource;
 import com.rupesh.ems.resources.EventRegistrationResource;
 import com.rupesh.ems.resources.EventResource;
 import com.rupesh.ems.resources.EventTeamResource;
+import com.rupesh.ems.resources.UserTeamResource;
 import com.rupesh.ems.resources.PaymentResource;
 import com.rupesh.ems.resources.SwaggerDocsResource;
 import com.rupesh.ems.resources.WebhookResource;
@@ -158,6 +159,7 @@ public class EventManagementSystemApplication
     environment.jersey().register(new AdminResource(adminService));
     environment.jersey().register(new EventResource(eventService));
     environment.jersey().register(new EventTeamResource(eventTeamService, eventTeamRequestService));
+    environment.jersey().register(new UserTeamResource(eventTeamService, eventTeamRequestService));
     environment.jersey().register(new EventRegistrationResource(eventRegistrationService));
     environment.jersey().register(new PaymentResource(paymentService));
     environment.jersey().register(new WebhookResource(paymentService));
