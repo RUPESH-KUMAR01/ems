@@ -29,11 +29,11 @@ public class TeamMembershipRequest {
   private Long version;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(name = "OPTLOCK", nullable = false)
   private RequestType type;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(name = "status", nullable = false)
   private RequestStatus status = RequestStatus.PENDING;
 
   public TeamMembershipRequest() {}

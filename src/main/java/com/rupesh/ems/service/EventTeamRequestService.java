@@ -24,17 +24,14 @@ public class EventTeamRequestService {
   private final UserDao userDao;
   private final TeamMembershipRequestDao teamMembershipRequestDao;
   private final EventTeamService eventTeamService;
-  private final EventRegistrationService eventRegistrationService;
 
   public EventTeamRequestService(
       UserDao userDao,
       TeamMembershipRequestDao teamMembershipRequestDao,
-      EventTeamService eventTeamService,
-      EventRegistrationService eventRegistrationService) {
+      EventTeamService eventTeamService) {
     this.userDao = userDao;
     this.teamMembershipRequestDao = teamMembershipRequestDao;
     this.eventTeamService = eventTeamService;
-    this.eventRegistrationService = eventRegistrationService;
   }
 
   public TeamMembershipResponse requestToJoinTeam(Long eventId, Long teamId, UserPrincipal user) {

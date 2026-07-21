@@ -57,8 +57,7 @@ public class EventTeamRequestServiceRigorousConcurrencyTest {
 
     teamService =
         new EventTeamService(eventDao, teamDao, teamMemberDao, requestDao, eventRegistrationDao);
-    requestService =
-        new EventTeamRequestService(userDao, requestDao, teamService, eventRegistrationService);
+    requestService = new EventTeamRequestService(userDao, requestDao, teamService);
   }
 
   @Test

@@ -130,8 +130,7 @@ public class EventManagementSystemApplication
     EventRegistrationService eventRegistrationService =
         new EventRegistrationService(eventDao, teamDao, teamMemberDao, eventRegistrationDao);
     EventTeamRequestService eventTeamRequestService =
-        new EventTeamRequestService(
-            userDao, teamMembershipRequestDao, eventTeamService, eventRegistrationService);
+        new EventTeamRequestService(userDao, teamMembershipRequestDao, eventTeamService);
     PaymentService paymentService =
         new PaymentService(
             paymentDao, eventRegistrationDao, eventDao, configuration.getRazorpayConfig());
