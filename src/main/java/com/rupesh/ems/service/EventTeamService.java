@@ -245,11 +245,12 @@ public class EventTeamService {
   }
 
   public Team lockTeamForUpdate(Long teamId) {
+    LOGGER.debug("Acquiring pessimistic write lock for teamId={}", teamId);
     return teamDao
         .getTeamByIdForUpdate(teamId)
         .orElseThrow(
             () -> {
-              LOGGER.warn("Team with teamId={} not found", teamId);
+              LOGGER.warn("Failed to acquire lock. Team with teamId={} not found", teamId);
               return new NotFoundException("Team not found");
             });
   }
@@ -292,16 +293,21 @@ public class EventTeamService {
   public void ensureTeamCanAcceptMember(Long eventId, Long teamId) {
     Event event = getEventOrThrow(eventId);
     Team team = getEventTeam(eventId, teamId);
+    ensureTeamCanAcceptMember(event, team);
+  }
+
+  public void ensureTeamCanAcceptMember(Event event, Team team) {
     ensureTeamEvent(event);
     ensureRegistrationOpen(event);
-    ensureTeamRegistrationNotCompleted(eventId, teamId);
+    ensureTeamRegistrationNotCompleted(event.getId(), team.getId());
 
     if (team.getMemberCount() >= event.getMaxTeamSize()) {
       LOGGER.warn(
-          "Team with teamId={} for eventId={} has reached its member limit of {}",
-          teamId,
-          eventId,
-          event.getMaxTeamSize());
+          "Team with teamId={} for eventId={} has reached its member limit of {} (Current members: {})",
+          team.getId(),
+          event.getId(),
+          event.getMaxTeamSize(),
+          team.getMemberCount());
       throw new BadRequestException("Team member limit reached");
     }
   }
@@ -316,26 +322,29 @@ public class EventTeamService {
             });
   }
 
-  public void addTeamMember(Long teamId, Long userId) {
-    Team team =
-        teamDao
-            .getTeamById(teamId)
-            .orElseThrow(
-                () -> {
-                  LOGGER.warn("Team with teamId={} not found", teamId);
-                  return new NotFoundException("Team not found");
-                });
-    ensureTeamRegistrationNotCompleted(team.getEventId(), teamId);
+  public void addTeamMember(Long eventId, Long teamId, Long userId) {
+    LOGGER.info("Starting safe team member addition for userId={} to teamId={} for eventId={}", userId, teamId, eventId);
+    
+    // Acquire pessimistic write lock to serialize approvals
+    Team team = lockTeamForUpdate(teamId);
+    Event event = getEventOrThrow(eventId);
+    
+    // Validate state under lock
+    ensureTeamCanAcceptMember(event, team);
+    ensureNotParticipantofEvent(eventId, userId);
+    ensureNotTeamMember(teamId, userId, "User is already a member of this team");
 
     try {
-      teamMemberDao.create(new TeamMember(userId, teamId, team.getEventId()));
+      teamMemberDao.create(new TeamMember(userId, teamId, eventId));
       team.setMemberCount(team.getMemberCount() + 1);
       teamDao.update(team);
+      LOGGER.info("Successfully added userId={} to teamId={}. New member count: {}", userId, teamId, team.getMemberCount());
     } catch (PersistenceException e) {
       if (e.getCause() instanceof ConstraintViolationException) {
-        LOGGER.warn("User with userId={} is already in a team for eventId={}", userId, team.getEventId());
+        LOGGER.warn("User with userId={} is already in a team for eventId={} (Caught by DB Unique Constraint)", userId, eventId);
         throw new ConflictException("User is already a member of a team in this event");
       }
+      LOGGER.error("Database error while adding team member userId={} to teamId={}", userId, teamId, e);
       throw e;
     }
   }

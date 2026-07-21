@@ -149,11 +149,10 @@ public class EventTeamRequestService {
         getPendingMembershipRequest(teamId, userId, RequestType.JOIN_REQUEST, "Request not found");
 
     if (response.isApproved()) {
-      eventTeamService.lockTeamForUpdate(teamId);
-      eventTeamService.ensureNotParticipantofEvent(eventId, userId);
-      eventTeamService.ensureTeamCanAcceptMember(eventId, teamId);
-      eventTeamService.ensureNotTeamMember(teamId, userId, "User is already a member of this team");
-      eventTeamService.addTeamMember(teamId, userId);
+      LOGGER.info("Approving join request for userId={} to teamId={} in eventId={}", userId, teamId, eventId);
+      eventTeamService.addTeamMember(eventId, teamId, userId);
+    } else {
+      LOGGER.info("Rejecting join request for userId={} to teamId={} in eventId={}", userId, teamId, eventId);
     }
 
     return applyMembershipResponse(membershipRequest, response);
@@ -170,12 +169,10 @@ public class EventTeamRequestService {
             teamId, user.getId(), RequestType.INVITATION, "Invitation not found");
 
     if (response.isApproved()) {
-      eventTeamService.lockTeamForUpdate(teamId);
-      eventTeamService.ensureNotParticipantofEvent(eventId, user.getId());
-      eventTeamService.ensureTeamCanAcceptMember(eventId, teamId);
-      eventTeamService.ensureNotTeamMember(
-          teamId, user.getId(), "You are already a member of this team");
-      eventTeamService.addTeamMember(teamId, user.getId());
+      LOGGER.info("Approving invitation for userId={} to teamId={} in eventId={}", user.getId(), teamId, eventId);
+      eventTeamService.addTeamMember(eventId, teamId, user.getId());
+    } else {
+      LOGGER.info("Rejecting invitation for userId={} to teamId={} in eventId={}", user.getId(), teamId, eventId);
     }
 
     return applyMembershipResponse(invitation, response);
