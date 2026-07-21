@@ -33,6 +33,9 @@ public class Team {
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
+  @Column(name = "member_count", nullable = false)
+  private Integer memberCount = 0;
+
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
@@ -70,6 +73,14 @@ public class Team {
 
   public Instant getCreatedAt() {
     return createdAt;
+  }
+
+  public Integer getMemberCount() {
+    return memberCount;
+  }
+
+  public void setMemberCount(Integer memberCount) {
+    this.memberCount = memberCount;
   }
 
   public Instant getUpdatedAt() {

@@ -23,6 +23,8 @@ import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.time.Instant;
 import java.util.List;
+import jakarta.persistence.PersistenceException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +59,10 @@ public class EventTeamService {
     ensureTeamNameAvailable(eventId, request.getName(), null);
     ensureNotParticipantofEvent(eventId, user.getId());
 
-    Team team = teamDao.create(new Team(eventId, request.getName(), user.getId()));
-    teamMemberDao.create(new TeamMember(user.getId(), team.getId()));
+    Team team = new Team(eventId, request.getName(), user.getId());
+    team.setMemberCount(1); // The owner is the first member
+    team = teamDao.create(team);
+    teamMemberDao.create(new TeamMember(user.getId(), team.getId(), eventId));
     LOGGER.info(
         "Team with teamId={} created for eventId={} by userId={}",
         team.getId(),
@@ -169,6 +173,8 @@ public class EventTeamService {
                 });
 
     teamMemberDao.delete(membership);
+    team.setMemberCount(team.getMemberCount() - 1);
+    teamDao.update(team);
     LOGGER.info(
         "User with userId={} removed from teamId={} of eventId={}", userId, teamId, eventId);
     TeamMembershipRequest request =
@@ -238,6 +244,16 @@ public class EventTeamService {
             });
   }
 
+  public Team lockTeamForUpdate(Long teamId) {
+    return teamDao
+        .getTeamByIdForUpdate(teamId)
+        .orElseThrow(
+            () -> {
+              LOGGER.warn("Team with teamId={} not found", teamId);
+              return new NotFoundException("Team not found");
+            });
+  }
+
   public Team getOwnedEventTeam(Long eventId, Long teamId, UserPrincipal user) {
     return teamDao
         .findByEventIdAndTeamId(eventId, teamId)
@@ -280,7 +296,7 @@ public class EventTeamService {
     ensureRegistrationOpen(event);
     ensureTeamRegistrationNotCompleted(eventId, teamId);
 
-    if (teamMemberDao.countByTeamId(team.getId()) >= event.getMaxTeamSize()) {
+    if (team.getMemberCount() >= event.getMaxTeamSize()) {
       LOGGER.warn(
           "Team with teamId={} for eventId={} has reached its member limit of {}",
           teamId,
@@ -311,7 +327,17 @@ public class EventTeamService {
                 });
     ensureTeamRegistrationNotCompleted(team.getEventId(), teamId);
 
-    teamMemberDao.create(new TeamMember(userId, teamId));
+    try {
+      teamMemberDao.create(new TeamMember(userId, teamId, team.getEventId()));
+      team.setMemberCount(team.getMemberCount() + 1);
+      teamDao.update(team);
+    } catch (PersistenceException e) {
+      if (e.getCause() instanceof ConstraintViolationException) {
+        LOGGER.warn("User with userId={} is already in a team for eventId={}", userId, team.getEventId());
+        throw new ConflictException("User is already a member of a team in this event");
+      }
+      throw e;
+    }
   }
 
   private void ensureTeamMember(Long teamId, Long userId, String message) {

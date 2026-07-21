@@ -4,6 +4,7 @@ import com.rupesh.ems.core.Team;
 import io.dropwizard.hibernate.AbstractDAO;
 import java.util.List;
 import java.util.Optional;
+import jakarta.persistence.LockModeType;
 import org.hibernate.SessionFactory;
 
 public class TeamDao extends AbstractDAO<Team> {
@@ -22,6 +23,14 @@ public class TeamDao extends AbstractDAO<Team> {
 
   public Optional<Team> getTeamById(Long teamId) {
     return Optional.ofNullable(get(teamId));
+  }
+
+  public Optional<Team> getTeamByIdForUpdate(Long teamId) {
+    Team team = currentSession().find(Team.class, teamId, LockModeType.PESSIMISTIC_WRITE);
+    if (team != null) {
+      currentSession().refresh(team);
+    }
+    return Optional.ofNullable(team);
   }
 
   public Optional<Team> findByEventIdAndTeamId(Long eventId, Long teamId) {

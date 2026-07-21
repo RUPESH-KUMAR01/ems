@@ -24,6 +24,10 @@ public class TeamMembershipRequest {
   @Column(name = "responded_at")
   private Instant respondedAt;
 
+  @Version
+  @Column(name = "version")
+  private Long version;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private RequestType type;
@@ -66,6 +70,10 @@ public class TeamMembershipRequest {
 
   public Instant getRespondedAt() {
     return respondedAt;
+  }
+
+  public Long getVersion() {
+    return version;
   }
 
   public void setStatus(RequestStatus status) {

@@ -14,7 +14,9 @@ public class TeamMemberDao extends AbstractDAO<TeamMember> {
   }
 
   public TeamMember create(TeamMember teamMember) {
-    return persist(teamMember);
+    persist(teamMember);
+    currentSession().flush();
+    return teamMember;
   }
 
   public List<TeamMember> getTeamsByUserId(Long userId) {

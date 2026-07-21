@@ -149,6 +149,7 @@ public class EventTeamRequestService {
         getPendingMembershipRequest(teamId, userId, RequestType.JOIN_REQUEST, "Request not found");
 
     if (response.isApproved()) {
+      eventTeamService.lockTeamForUpdate(teamId);
       eventTeamService.ensureNotParticipantofEvent(eventId, userId);
       eventTeamService.ensureTeamCanAcceptMember(eventId, teamId);
       eventTeamService.ensureNotTeamMember(teamId, userId, "User is already a member of this team");
@@ -169,6 +170,7 @@ public class EventTeamRequestService {
             teamId, user.getId(), RequestType.INVITATION, "Invitation not found");
 
     if (response.isApproved()) {
+      eventTeamService.lockTeamForUpdate(teamId);
       eventTeamService.ensureNotParticipantofEvent(eventId, user.getId());
       eventTeamService.ensureTeamCanAcceptMember(eventId, teamId);
       eventTeamService.ensureNotTeamMember(

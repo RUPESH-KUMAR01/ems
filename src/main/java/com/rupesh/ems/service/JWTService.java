@@ -46,8 +46,10 @@ public class JWTService {
   public DecodedJWT verifyJwt(String jwt) {
     try {
       DecodedJWT decodedJWT = verifier.verify(jwt);
+      LOGGER.info("JWT verified successfully for user id: {}", decodedJWT.getClaim("id").asLong());
       return decodedJWT;
     } catch (JWTVerificationException e) {
+      LOGGER.warn("JWT verification failed: {}", e.getMessage());
       throw new UnauthorizedException("Invalid JWT token", e);
     }
   }
@@ -68,6 +70,7 @@ public class JWTService {
     try {
       return Role.valueOf(jwt.getClaim("role").asString());
     } catch (Exception e) {
+      LOGGER.warn("Invalid role in token: {}", e.getMessage());
       throw new UnauthorizedException("Invalid role in token");
     }
   }
