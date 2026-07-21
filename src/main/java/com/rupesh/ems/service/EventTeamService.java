@@ -21,9 +21,9 @@ import com.rupesh.ems.exceptions.BadRequestException;
 import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
+import jakarta.persistence.PersistenceException;
 import java.time.Instant;
 import java.util.List;
-import jakarta.persistence.PersistenceException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -323,12 +323,16 @@ public class EventTeamService {
   }
 
   public void addTeamMember(Long eventId, Long teamId, Long userId) {
-    LOGGER.info("Starting safe team member addition for userId={} to teamId={} for eventId={}", userId, teamId, eventId);
-    
+    LOGGER.info(
+        "Starting safe team member addition for userId={} to teamId={} for eventId={}",
+        userId,
+        teamId,
+        eventId);
+
     // Acquire pessimistic write lock to serialize approvals
     Team team = lockTeamForUpdate(teamId);
     Event event = getEventOrThrow(eventId);
-    
+
     // Validate state under lock
     ensureTeamCanAcceptMember(event, team);
     ensureNotParticipantofEvent(eventId, userId);
@@ -338,13 +342,21 @@ public class EventTeamService {
       teamMemberDao.create(new TeamMember(userId, teamId, eventId));
       team.setMemberCount(team.getMemberCount() + 1);
       teamDao.update(team);
-      LOGGER.info("Successfully added userId={} to teamId={}. New member count: {}", userId, teamId, team.getMemberCount());
+      LOGGER.info(
+          "Successfully added userId={} to teamId={}. New member count: {}",
+          userId,
+          teamId,
+          team.getMemberCount());
     } catch (PersistenceException e) {
       if (e.getCause() instanceof ConstraintViolationException) {
-        LOGGER.warn("User with userId={} is already in a team for eventId={} (Caught by DB Unique Constraint)", userId, eventId);
+        LOGGER.warn(
+            "User with userId={} is already in a team for eventId={} (Caught by DB Unique Constraint)",
+            userId,
+            eventId);
         throw new ConflictException("User is already a member of a team in this event");
       }
-      LOGGER.error("Database error while adding team member userId={} to teamId={}", userId, teamId, e);
+      LOGGER.error(
+          "Database error while adding team member userId={} to teamId={}", userId, teamId, e);
       throw e;
     }
   }

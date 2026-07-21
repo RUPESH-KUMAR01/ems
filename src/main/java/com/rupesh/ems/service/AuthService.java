@@ -21,8 +21,7 @@ public class AuthService {
   private final UserDao userDao;
   private final JWTService jwtService;
 
-  public AuthService(
-      UserDao userDao, JWTService jwtService) {
+  public AuthService(UserDao userDao, JWTService jwtService) {
     this.userDao = userDao;
     this.jwtService = jwtService;
   }

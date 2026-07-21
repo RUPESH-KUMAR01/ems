@@ -213,6 +213,12 @@ public class EventTeamResource {
       @PathParam("teamId") Long teamId,
       @Valid InviteUserRequest request,
       @Auth UserPrincipal user) {
+    LOGGER.info(
+        "UserId={} inviting email={} to teamId={} for eventId={}",
+        user.getId(),
+        request.getEmail(),
+        teamId,
+        eventId);
     return eventTeamRequestService.inviteUserToTeam(eventId, teamId, request.getEmail(), user);
   }
 
@@ -224,6 +230,12 @@ public class EventTeamResource {
       @PathParam("teamId") Long teamId,
       @PathParam("userId") Long userId,
       @Auth UserPrincipal user) {
+    LOGGER.info(
+        "UserId={} deleting invitation for userId={} to teamId={} for eventId={}",
+        user.getId(),
+        userId,
+        teamId,
+        eventId);
     eventTeamRequestService.deleteInvitation(eventId, teamId, userId, user);
     return new MessageResponse("Invitation deleted successfully");
   }
@@ -236,6 +248,11 @@ public class EventTeamResource {
       @PathParam("teamId") Long teamId,
       @Valid RespondToRequestRequest request,
       @Auth UserPrincipal user) {
+    LOGGER.info(
+        "UserId={} responding to invitation for teamId={} of eventId={}",
+        user.getId(),
+        teamId,
+        eventId);
     return eventTeamRequestService.respondToInvitation(eventId, teamId, request, user);
   }
 }

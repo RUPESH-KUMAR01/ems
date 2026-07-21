@@ -85,6 +85,13 @@ public class EventTeamRequestService {
     TeamMembershipRequest request =
         new TeamMembershipRequest(teamId, invitee.getId(), RequestType.INVITATION);
 
+    LOGGER.info(
+        "UserId={} created invitation for email={} (userId={}) to teamId={} for eventId={}",
+        user.getId(),
+        email,
+        invitee.getId(),
+        teamId,
+        eventId);
     return new TeamMembershipResponse(teamMembershipRequestDao.create(request));
   }
 
@@ -96,6 +103,12 @@ public class EventTeamRequestService {
     teamMembershipRequestDao.delete(
         getPendingMembershipRequest(
             teamId, userId, RequestType.INVITATION, "Invitation not found"));
+    LOGGER.info(
+        "UserId={} deleted invitation for userId={} to teamId={} for eventId={}",
+        user.getId(),
+        userId,
+        teamId,
+        eventId);
   }
 
   public void deleteRequest(Long eventId, Long teamId, UserPrincipal user) {
@@ -129,7 +142,7 @@ public class EventTeamRequestService {
 
   public List<TeamMembershipResponse> getPendingRequestsForUser(UserPrincipal user) {
     eventTeamService.ensureVerified(user);
-
+    LOGGER.info("Fetching pending requests for userId={}", user.getId());
     return teamMembershipRequestDao.getPendingRequestsByUserId(user.getId()).stream()
         .map(TeamMembershipResponse::new)
         .toList();
@@ -149,10 +162,18 @@ public class EventTeamRequestService {
         getPendingMembershipRequest(teamId, userId, RequestType.JOIN_REQUEST, "Request not found");
 
     if (response.isApproved()) {
-      LOGGER.info("Approving join request for userId={} to teamId={} in eventId={}", userId, teamId, eventId);
+      LOGGER.info(
+          "Approving join request for userId={} to teamId={} in eventId={}",
+          userId,
+          teamId,
+          eventId);
       eventTeamService.addTeamMember(eventId, teamId, userId);
     } else {
-      LOGGER.info("Rejecting join request for userId={} to teamId={} in eventId={}", userId, teamId, eventId);
+      LOGGER.info(
+          "Rejecting join request for userId={} to teamId={} in eventId={}",
+          userId,
+          teamId,
+          eventId);
     }
 
     return applyMembershipResponse(membershipRequest, response);
@@ -169,10 +190,18 @@ public class EventTeamRequestService {
             teamId, user.getId(), RequestType.INVITATION, "Invitation not found");
 
     if (response.isApproved()) {
-      LOGGER.info("Approving invitation for userId={} to teamId={} in eventId={}", user.getId(), teamId, eventId);
+      LOGGER.info(
+          "Approving invitation for userId={} to teamId={} in eventId={}",
+          user.getId(),
+          teamId,
+          eventId);
       eventTeamService.addTeamMember(eventId, teamId, user.getId());
     } else {
-      LOGGER.info("Rejecting invitation for userId={} to teamId={} in eventId={}", user.getId(), teamId, eventId);
+      LOGGER.info(
+          "Rejecting invitation for userId={} to teamId={} in eventId={}",
+          user.getId(),
+          teamId,
+          eventId);
     }
 
     return applyMembershipResponse(invitation, response);
@@ -186,6 +215,11 @@ public class EventTeamRequestService {
 
     membershipRequest.setStatus(response.getStatus());
     membershipRequest.setRespondedAt(Instant.now());
+    LOGGER.info(
+        "Membership request for userId={} to teamId={} updated to status={}",
+        membershipRequest.getUserId(),
+        membershipRequest.getTeamId(),
+        response.getStatus());
 
     return new TeamMembershipResponse(teamMembershipRequestDao.update(membershipRequest));
   }
