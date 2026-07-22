@@ -6,26 +6,33 @@ import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import org.hibernate.SessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TeamDao extends AbstractDAO<Team> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TeamDao.class);
 
   public TeamDao(SessionFactory sessionFactory) {
     super(sessionFactory);
   }
 
   public Team create(Team team) {
+    LOGGER.info("DAO: Creating team name={} for eventId={}", team.getName(), team.getEventId());
     return persist(team);
   }
 
   public Team update(Team team) {
+    LOGGER.info("DAO: Updating team teamId={}", team.getId());
     return currentSession().merge(team);
   }
 
   public Optional<Team> getTeamById(Long teamId) {
+    LOGGER.debug("DAO: Fetching team by teamId={}", teamId);
     return Optional.ofNullable(get(teamId));
   }
 
   public Optional<Team> getTeamByIdForUpdate(Long teamId) {
+    LOGGER.debug("DAO: Fetching team by teamId={} for update", teamId);
     Team team = currentSession().find(Team.class, teamId, LockModeType.PESSIMISTIC_WRITE);
     if (team != null) {
       currentSession().refresh(team);
@@ -34,6 +41,7 @@ public class TeamDao extends AbstractDAO<Team> {
   }
 
   public Optional<Team> findByEventIdAndTeamId(Long eventId, Long teamId) {
+    LOGGER.debug("DAO: Fetching team by eventId={} and teamId={}", eventId, teamId);
     return currentSession()
         .createQuery(
             """
@@ -48,6 +56,7 @@ public class TeamDao extends AbstractDAO<Team> {
   }
 
   public List<Team> findByEventId(Long eventId) {
+    LOGGER.debug("DAO: Fetching teams by eventId={}", eventId);
     return currentSession()
         .createQuery(
             """
@@ -61,6 +70,7 @@ public class TeamDao extends AbstractDAO<Team> {
   }
 
   public Optional<Team> findByEventIdAndName(Long eventId, String name) {
+    LOGGER.debug("DAO: Fetching team by eventId={} and name={}", eventId, name);
     return currentSession()
         .createQuery(
             """
@@ -75,6 +85,7 @@ public class TeamDao extends AbstractDAO<Team> {
   }
 
   public Optional<Team> findByEventIdAndOwnerId(Long eventId, Long ownerId) {
+    LOGGER.debug("DAO: Fetching team by eventId={} and ownerId={}", eventId, ownerId);
     return currentSession()
         .createQuery(
             """
@@ -92,12 +103,13 @@ public class TeamDao extends AbstractDAO<Team> {
     if (team == null) {
       return false;
     }
-
+    LOGGER.info("DAO: Deleting team teamId={}", team.getId());
     currentSession().remove(team);
     return true;
   }
 
   public List<Team> findByUserId(Long userId) {
+    LOGGER.debug("DAO: Fetching teams by userId={}", userId);
     return currentSession()
         .createQuery(
             """
@@ -113,6 +125,7 @@ public class TeamDao extends AbstractDAO<Team> {
   }
 
   public List<Team> findAll() {
+    LOGGER.debug("DAO: Fetching all teams");
     return currentSession().createQuery("FROM Team", Team.class).getResultList();
   }
 }
