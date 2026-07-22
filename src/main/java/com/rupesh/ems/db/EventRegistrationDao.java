@@ -64,6 +64,22 @@ public class EventRegistrationDao extends AbstractDAO<EventRegistration> {
         .getResultList();
   }
 
+  public List<EventRegistration> findByUserId(Long userId) {
+    return currentSession()
+        .createQuery(
+            """
+            FROM EventRegistration
+            WHERE userId = :userId
+            """,
+            EventRegistration.class)
+        .setParameter("userId", userId)
+        .getResultList();
+  }
+
+  public List<EventRegistration> findAll() {
+    return currentSession().createQuery("FROM EventRegistration", EventRegistration.class).getResultList();
+  }
+
   public boolean delete(EventRegistration registration) {
     if (registration == null) {
       return false;
@@ -73,3 +89,4 @@ public class EventRegistrationDao extends AbstractDAO<EventRegistration> {
     return true;
   }
 }
+

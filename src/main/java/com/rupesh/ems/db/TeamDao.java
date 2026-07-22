@@ -111,4 +111,9 @@ public class TeamDao extends AbstractDAO<Team> {
         .setParameter("userId", userId)
         .getResultList();
   }
+
+  public List<Team> findAll() {
+    return currentSession().createQuery("FROM Team", Team.class).getResultList();
+  }
 }
+

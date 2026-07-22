@@ -33,7 +33,11 @@ public class EventRegistrationResource {
       @PathParam("eventId") Long eventId,
       @Valid RegisterEventRequest request,
       @Auth UserPrincipal user) {
-
+    LOGGER.info(
+        "Registering user {} for event {} with teamId {}",
+        user.getId(),
+        eventId,
+        request.getTeamId());
     return registrationService.register(eventId, request.getTeamId(), user);
   }
 
@@ -42,7 +46,7 @@ public class EventRegistrationResource {
   @UnitOfWork
   public MessageResponse cancelRegistration(
       @PathParam("registrationId") Long registrationId, @Auth UserPrincipal user) {
-
+    LOGGER.info("Cancelling registration {} for user {}", registrationId, user.getId());
     registrationService.cancel(registrationId, user);
     return new MessageResponse("Registration cancelled successfully");
   }

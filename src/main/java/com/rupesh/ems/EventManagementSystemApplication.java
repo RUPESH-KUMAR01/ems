@@ -121,14 +121,21 @@ public class EventManagementSystemApplication
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService);
     AdminService adminService =
-        new AdminService(userDao, teamDao, teamMemberDao, teamMembershipRequestDao, eventDao);
+        new AdminService(
+            userDao,
+            teamDao,
+            teamMemberDao,
+            teamMembershipRequestDao,
+            eventDao,
+            eventRegistrationDao,
+            paymentDao);
 
     EventService eventService = new EventService(eventDao);
     EventTeamService eventTeamService =
         new EventTeamService(
             eventDao, teamDao, teamMemberDao, teamMembershipRequestDao, eventRegistrationDao);
     EventRegistrationService eventRegistrationService =
-        new EventRegistrationService(eventDao, teamDao, teamMemberDao, eventRegistrationDao);
+        new EventRegistrationService(eventDao, teamDao, eventRegistrationDao);
     EventTeamRequestService eventTeamRequestService =
         new EventTeamRequestService(userDao, teamMembershipRequestDao, eventTeamService);
     PaymentService paymentService =

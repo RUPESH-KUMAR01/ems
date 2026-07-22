@@ -29,7 +29,7 @@ public class TeamMembershipRequest {
   private Long version;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "OPTLOCK", nullable = false)
+  @Column(name = "type", nullable = false)
   private RequestType type;
 
   @Enumerated(EnumType.STRING)

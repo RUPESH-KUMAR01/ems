@@ -24,7 +24,8 @@ public class WebhookResource {
   @POST
   @UnitOfWork
   public void handleWebhook(String payload, @HeaderParam("X-Razorpay-Signature") String signature) {
-
+    LOGGER.info("Received webhook payload: {}", payload);
+    LOGGER.info("Received webhook signature: {}", signature);
     paymentService.handleWebhook(payload, signature);
   }
 }

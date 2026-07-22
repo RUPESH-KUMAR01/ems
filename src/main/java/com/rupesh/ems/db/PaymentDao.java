@@ -2,6 +2,7 @@ package com.rupesh.ems.db;
 
 import com.rupesh.ems.core.Payment;
 import io.dropwizard.hibernate.AbstractDAO;
+import java.util.List;
 import java.util.Optional;
 import org.hibernate.SessionFactory;
 
@@ -47,6 +48,10 @@ public class PaymentDao extends AbstractDAO<Payment> {
         .uniqueResultOptional();
   }
 
+  public List<Payment> findAll() {
+    return currentSession().createQuery("FROM Payment", Payment.class).getResultList();
+  }
+
   public boolean delete(Payment payment) {
     if (payment == null) {
       return false;
@@ -56,3 +61,4 @@ public class PaymentDao extends AbstractDAO<Payment> {
     return true;
   }
 }
+

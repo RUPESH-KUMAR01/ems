@@ -33,7 +33,7 @@ public class PaymentResource {
   @UnitOfWork
   public CreateOrderResponse createOrder(
       @Valid CreateOrderRequest request, @Auth UserPrincipal user) {
-
+    LOGGER.info("Creating order for registration {}", request.getRegistrationId());
     return paymentService.createOrder(request.getRegistrationId());
   }
 
@@ -42,7 +42,10 @@ public class PaymentResource {
   @UnitOfWork
   public PaymentResponse verifyPayment(
       @Valid VerifyPaymentRequest request, @Auth UserPrincipal user) {
-
+    LOGGER.info(
+        "Verifying payment for order {} and payment {}",
+        request.getRazorpayOrderId(),
+        request.getRazorpayPaymentId());
     return paymentService.verifyAndCompletePayment(
         request.getRazorpayOrderId(),
         request.getRazorpayPaymentId(),
@@ -54,7 +57,7 @@ public class PaymentResource {
   @UnitOfWork
   public PaymentResponse failPayment(
       @PathParam("razorpayOrderId") String razorpayOrderId, @Auth UserPrincipal user) {
-
+    LOGGER.info("Marking payment as failed for order {}", razorpayOrderId);
     return paymentService.failPayment(razorpayOrderId);
   }
 
@@ -63,7 +66,7 @@ public class PaymentResource {
   @UnitOfWork
   public PaymentResponse getPaymentByRegistration(
       @PathParam("registrationId") Long registrationId, @Auth UserPrincipal user) {
-
+    LOGGER.info("Fetching payment information for registration {}", registrationId);
     return paymentService.getPaymentByRegistrationId(registrationId);
   }
 }
