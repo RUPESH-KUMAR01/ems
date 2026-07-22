@@ -8,7 +8,17 @@ public final class OtpUtil {
 
   public OtpUtil() {}
 
-  public static String generateOtp(int length) {
+  public static String generatePhoneOtp(int length) {
+    if (length <= 0) {
+      throw new InternalServerErrorException("Otp cannot be generated");
+    }
+    StringBuilder otp = new StringBuilder(length);
+    for (int i = 0; i < length; i++) {
+      otp.append(RANDOM.nextInt(10));
+    }
+    return otp.toString();
+  }
+    public static String generateEmailOtp(int length) {
     if (length <= 0) {
       throw new InternalServerErrorException("Otp cannot be generated");
     }

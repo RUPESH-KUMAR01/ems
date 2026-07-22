@@ -5,6 +5,8 @@ import com.rupesh.ems.configs.BootstrapAdminConfiguration;
 import com.rupesh.ems.configs.EmailServiceConfiguration;
 import com.rupesh.ems.configs.JWTConfig;
 import com.rupesh.ems.configs.RazorpayConfig;
+import com.rupesh.ems.configs.TwilioConfiguration;
+
 import io.dropwizard.core.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import jakarta.validation.Valid;
@@ -73,5 +75,17 @@ public class EventManagementSystemConfiguration extends Configuration {
   @JsonProperty("razorpay")
   public void setRazorpayConfig(RazorpayConfig razorpayConfig) {
     this.razorpayConfig = razorpayConfig;
+  }
+
+  @Valid @NotNull private TwilioConfiguration twilioConfiguration = new TwilioConfiguration();
+
+  @JsonProperty("twilio")
+  public TwilioConfiguration getTwilioConfiguration() {
+    return twilioConfiguration;
+  }
+
+  @JsonProperty("twilio")
+  public void setTwilioConfiguration(TwilioConfiguration twilioConfiguration) {
+    this.twilioConfiguration = twilioConfiguration;
   }
 }

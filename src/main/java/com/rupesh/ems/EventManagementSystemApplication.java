@@ -46,6 +46,8 @@ import com.rupesh.ems.service.email.EmailService;
 import com.rupesh.ems.service.email.SMTPEmailService;
 import com.rupesh.ems.service.sms.ConsoleSmsService;
 import com.rupesh.ems.service.sms.SmsService;
+import com.rupesh.ems.service.sms.TwilioSmsService;
+
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
@@ -117,7 +119,7 @@ public class EventManagementSystemApplication
 
     JWTService jwtService = new JWTService(configuration.getJwtConfig());
     EmailService emailService = new SMTPEmailService(configuration.getEmailServiceConfiguration());
-    SmsService smsService = new ConsoleSmsService();
+    SmsService smsService = new TwilioSmsService(configuration.getTwilioConfiguration());
     VerificationService verificationService =
         new VerificationService(verificationDao, userDao, emailService, smsService);
     AuthService authService = new AuthService(userDao, jwtService);

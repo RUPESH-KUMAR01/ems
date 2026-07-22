@@ -52,7 +52,7 @@ public class VerificationService {
       LOGGER.warn("Attempt to generate OTP for already verified phone for user ID: {}", userId);
       throw new ConflictException("Phone already Verified");
     }
-    String otp = OtpUtil.generateOtp(OTP_LENGTH);
+    String otp = OtpUtil.generatePhoneOtp(OTP_LENGTH);
 
     verificationDao.deleteByUserAndType(userId, VerificationType.PHONE);
     LOGGER.info("Deleted existing phone verification code for user ID: {}", userId);
@@ -92,7 +92,7 @@ public class VerificationService {
       LOGGER.warn("Attempt to generate OTP for already verified email for user ID: {}", userId);
       throw new ConflictException("Email already Verified");
     }
-    String otp = OtpUtil.generateOtp(OTP_LENGTH);
+    String otp = OtpUtil.generateEmailOtp(OTP_LENGTH);
 
     verificationDao.deleteByUserAndType(userId, VerificationType.EMAIL);
     LOGGER.info("Deleted existing email verification code for user ID: {}", userId);
