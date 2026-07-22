@@ -1,7 +1,6 @@
 package com.rupesh.ems.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 
 import com.rupesh.ems.api.team.req.RespondToRequestRequest;
 import com.rupesh.ems.auth.UserPrincipal;
@@ -43,7 +42,6 @@ public class EventTeamRequestServiceRigorousConcurrencyTest {
   private EventDao eventDao;
   private EventRegistrationDao eventRegistrationDao;
   private UserDao userDao;
-  private EventRegistrationService eventRegistrationService;
 
   @BeforeEach
   public void setUp() {
@@ -53,7 +51,6 @@ public class EventTeamRequestServiceRigorousConcurrencyTest {
     eventDao = new EventDao(daoTestRule.getSessionFactory());
     eventRegistrationDao = new EventRegistrationDao(daoTestRule.getSessionFactory());
     userDao = new UserDao(daoTestRule.getSessionFactory());
-    eventRegistrationService = mock(EventRegistrationService.class);
 
     teamService =
         new EventTeamService(eventDao, teamDao, teamMemberDao, requestDao, eventRegistrationDao);

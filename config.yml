@@ -8,13 +8,14 @@ logging:
     - type: console
       threshold: ALL
       timeZone: UTC
-      logFormat: "%-5level [%d{yyyy-MM-dd HH:mm:ss.SSS,UTC}] [%thread] %logger{30}: %message%n"
+      logFormat: "%-5level [%d{yyyy-MM-dd HH:mm:ss.SSS,UTC}] [%X{requestId}] [%thread] %logger{30}: %message%n"
+
     - type: file
       currentLogFilename: ./target/ems.log
       archivedLogFilenamePattern: ./target/ems-%d.log.gz
       archivedFileCount: 5
       timeZone: UTC
-      logFormat: "%-5level [%d{yyyy-MM-dd HH:mm:ss.SSS,UTC}] [%thread] %logger{30}: %message%n"
+      logFormat: "%-5level [%d{yyyy-MM-dd HH:mm:ss.SSS,UTC}] [requestId=%X{requestId}] [%thread] %logger{30}: %message%n"
 database:
   driverClass: org.postgresql.Driver
 
@@ -27,8 +28,8 @@ database:
     charSet: UTF-8
     hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate.hbm2ddl.auto: update
-    hibernate.show_sql: true
-    hibernate.format_sql: true
+    # hibernate.show_sql: true
+    # hibernate.format_sql: true
   maxWaitForConnection: 1s
   validationQuery: "SELECT 1"
 

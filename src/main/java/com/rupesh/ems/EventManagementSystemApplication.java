@@ -19,6 +19,7 @@ import com.rupesh.ems.db.TeamMemberDao;
 import com.rupesh.ems.db.TeamMembershipRequestDao;
 import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.db.VerificationDao;
+import com.rupesh.ems.logging.RequestIdFilter;
 import com.rupesh.ems.mappers.ApiExceptionMapper;
 import com.rupesh.ems.ratelimit.RateLimitFilter;
 import com.rupesh.ems.ratelimit.RateLimitService;
@@ -149,6 +150,7 @@ public class EventManagementSystemApplication
             new Class<?>[] {JWTService.class, UserDao.class},
             new Object[] {jwtService, userDao});
     RoleAuthorizer authorizer = new RoleAuthorizer();
+    environment.jersey().register(new RequestIdFilter());
 
     environment
         .jersey()
