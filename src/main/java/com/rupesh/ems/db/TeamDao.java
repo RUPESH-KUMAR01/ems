@@ -116,4 +116,3 @@ public class TeamDao extends AbstractDAO<Team> {
     return currentSession().createQuery("FROM Team", Team.class).getResultList();
   }
 }
-

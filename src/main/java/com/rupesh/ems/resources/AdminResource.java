@@ -97,8 +97,7 @@ public class AdminResource {
   @GET
   @UnitOfWork
   @Path("/users/search/email")
-  public UserResponse getUserByEmail(
-      @QueryParam("email") String email, @Auth UserPrincipal admin) {
+  public UserResponse getUserByEmail(@QueryParam("email") String email, @Auth UserPrincipal admin) {
     LOGGER.info(
         "Admin userId={} email={} requesting getUserByEmail email={}",
         admin.getId(),
@@ -110,8 +109,7 @@ public class AdminResource {
   @GET
   @UnitOfWork
   @Path("/users/search/phone")
-  public UserResponse getUserByPhone(
-      @QueryParam("phone") String phone, @Auth UserPrincipal admin) {
+  public UserResponse getUserByPhone(@QueryParam("phone") String phone, @Auth UserPrincipal admin) {
     LOGGER.info(
         "Admin userId={} email={} requesting getUserByPhone phone={}",
         admin.getId(),
@@ -124,8 +122,7 @@ public class AdminResource {
   @UnitOfWork
   @Path("/users")
   public List<UserResponse> getAllUsers(@Auth UserPrincipal admin) {
-    LOGGER.info(
-        "Admin userId={} email={} requesting getAllUsers", admin.getId(), admin.getEmail());
+    LOGGER.info("Admin userId={} email={} requesting getAllUsers", admin.getId(), admin.getEmail());
     return adminService.getAllUsers();
   }
 
@@ -178,8 +175,7 @@ public class AdminResource {
   @DELETE
   @UnitOfWork
   @Path("/users/{id}")
-  public AdminMessageResponse deleteUser(
-      @PathParam("id") Long userId, @Auth UserPrincipal admin) {
+  public AdminMessageResponse deleteUser(@PathParam("id") Long userId, @Auth UserPrincipal admin) {
     LOGGER.info(
         "Admin userId={} email={} requesting deleteUser targetUserId={}",
         admin.getId(),
@@ -191,8 +187,7 @@ public class AdminResource {
   @GET
   @UnitOfWork
   @Path("/users/{id}/teams")
-  public List<TeamResponse> getUserTeams(
-      @PathParam("id") Long userId, @Auth UserPrincipal admin) {
+  public List<TeamResponse> getUserTeams(@PathParam("id") Long userId, @Auth UserPrincipal admin) {
     LOGGER.info(
         "Admin userId={} email={} requesting getUserTeams targetUserId={}",
         admin.getId(),
@@ -220,16 +215,14 @@ public class AdminResource {
   @UnitOfWork
   @Path("/teams")
   public List<TeamResponse> getAllTeams(@Auth UserPrincipal admin) {
-    LOGGER.info(
-        "Admin userId={} email={} requesting getAllTeams", admin.getId(), admin.getEmail());
+    LOGGER.info("Admin userId={} email={} requesting getAllTeams", admin.getId(), admin.getEmail());
     return adminService.getAllTeams();
   }
 
   @GET
   @UnitOfWork
   @Path("/teams/{teamId}")
-  public TeamResponse getTeamById(
-      @PathParam("teamId") Long teamId, @Auth UserPrincipal admin) {
+  public TeamResponse getTeamById(@PathParam("teamId") Long teamId, @Auth UserPrincipal admin) {
     LOGGER.info(
         "Admin userId={} email={} requesting getTeamById teamId={}",
         admin.getId(),
@@ -362,8 +355,7 @@ public class AdminResource {
   @POST
   @UnitOfWork
   @Path("/events")
-  public EventResponse createEvent(
-      @Valid CreateEventRequest request, @Auth UserPrincipal admin) {
+  public EventResponse createEvent(@Valid CreateEventRequest request, @Auth UserPrincipal admin) {
     LOGGER.info(
         "Admin userId={} email={} requesting createEvent name={}",
         admin.getId(),
@@ -384,8 +376,7 @@ public class AdminResource {
   @GET
   @UnitOfWork
   @Path("/events/{eventId}")
-  public EventResponse getEventById(
-      @PathParam("eventId") Long eventId, @Auth UserPrincipal admin) {
+  public EventResponse getEventById(@PathParam("eventId") Long eventId, @Auth UserPrincipal admin) {
     LOGGER.info(
         "Admin userId={} email={} requesting getEventById eventId={}",
         admin.getId(),
@@ -471,9 +462,7 @@ public class AdminResource {
   @Path("/registrations")
   public List<EventRegistrationResponse> getAllRegistrations(@Auth UserPrincipal admin) {
     LOGGER.info(
-        "Admin userId={} email={} requesting getAllRegistrations",
-        admin.getId(),
-        admin.getEmail());
+        "Admin userId={} email={} requesting getAllRegistrations", admin.getId(), admin.getEmail());
     return adminService.getAllRegistrations();
   }
 

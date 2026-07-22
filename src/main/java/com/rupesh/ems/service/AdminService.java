@@ -294,9 +294,7 @@ public class AdminService {
 
   public TeamResponse updateTeam(Long teamId, UpdateTeamRequest request, UserPrincipal admin) {
     LOGGER.info(
-        "Admin userId={} updating teamId={}",
-        admin != null ? admin.getId() : "system",
-        teamId);
+        "Admin userId={} updating teamId={}", admin != null ? admin.getId() : "system", teamId);
     Team team = getTeamOrThrow(teamId);
 
     if (request.getName() != null) {
@@ -312,9 +310,7 @@ public class AdminService {
     LOGGER.info("Transferring ownership of teamId={} to userId={}", teamId, newOwnerId);
     Team team = getTeamOrThrow(teamId);
     User newOwner =
-        userDao
-            .getUserById(newOwnerId)
-            .orElseThrow(() -> new NotFoundException("User not found"));
+        userDao.getUserById(newOwnerId).orElseThrow(() -> new NotFoundException("User not found"));
 
     if (!newOwner.isFullyVerified()) {
       throw new BadRequestException("New owner must be fully verified");
@@ -370,11 +366,10 @@ public class AdminService {
     membershipRequest.setStatus(request.getStatus());
     teamMembershipRequestDao.update(membershipRequest);
 
-    if (request.getStatus() == RequestStatus.APPROVED) {
-      if (teamMemberDao.findByTeamIdAndUserId(teamId, userId).isEmpty()) {
-        TeamMember member = new TeamMember(userId, teamId, team.getEventId());
-        teamMemberDao.create(member);
-      }
+    if (request.getStatus() == RequestStatus.APPROVED
+        && teamMemberDao.findByTeamIdAndUserId(teamId, userId).isEmpty()) {
+      TeamMember member = new TeamMember(userId, teamId, team.getEventId());
+      teamMemberDao.create(member);
     }
 
     LOGGER.info("Successfully resolved request for userId={} on teamId={}", userId, teamId);
@@ -469,9 +464,7 @@ public class AdminService {
 
   public EventResponse updateEvent(Long eventId, UpdateEventRequest request, UserPrincipal admin) {
     LOGGER.info(
-        "Admin userId={} updating eventId={}",
-        admin != null ? admin.getId() : "system",
-        eventId);
+        "Admin userId={} updating eventId={}", admin != null ? admin.getId() : "system", eventId);
     Event event =
         eventDao.getEventById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
 
@@ -535,9 +528,7 @@ public class AdminService {
 
   public AdminMessageResponse deleteEvent(Long eventId, UserPrincipal admin) {
     LOGGER.info(
-        "Admin userId={} deleting eventId={}",
-        admin != null ? admin.getId() : "system",
-        eventId);
+        "Admin userId={} deleting eventId={}", admin != null ? admin.getId() : "system", eventId);
     Event event =
         eventDao.getEventById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
 

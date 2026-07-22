@@ -77,7 +77,9 @@ public class EventRegistrationDao extends AbstractDAO<EventRegistration> {
   }
 
   public List<EventRegistration> findAll() {
-    return currentSession().createQuery("FROM EventRegistration", EventRegistration.class).getResultList();
+    return currentSession()
+        .createQuery("FROM EventRegistration", EventRegistration.class)
+        .getResultList();
   }
 
   public boolean delete(EventRegistration registration) {
@@ -89,4 +91,3 @@ public class EventRegistrationDao extends AbstractDAO<EventRegistration> {
     return true;
   }
 }
-

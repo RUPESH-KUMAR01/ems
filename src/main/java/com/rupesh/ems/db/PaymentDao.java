@@ -61,4 +61,3 @@ public class PaymentDao extends AbstractDAO<Payment> {
     return true;
   }
 }
-

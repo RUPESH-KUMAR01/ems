@@ -14,12 +14,8 @@ import com.rupesh.ems.api.admin.req.AdminUpdateRegistrationStatusRequest;
 import com.rupesh.ems.api.admin.req.AdminUpdateVerificationRequest;
 import com.rupesh.ems.api.admin.req.ChangeUserRoleRequest;
 import com.rupesh.ems.api.admin.req.CreateManagedUserRequest;
-import com.rupesh.ems.api.admin.req.UpdateUserRequest;
-import com.rupesh.ems.api.admin.res.AdminMessageResponse;
 import com.rupesh.ems.api.admin.res.SystemStatsResponse;
 import com.rupesh.ems.api.auth.res.UserResponse;
-import com.rupesh.ems.api.event.req.CreateEventRequest;
-import com.rupesh.ems.api.event.req.UpdateEventRequest;
 import com.rupesh.ems.api.event.res.EventResponse;
 import com.rupesh.ems.api.payment.res.PaymentResponse;
 import com.rupesh.ems.api.registration.res.EventRegistrationResponse;
@@ -99,13 +95,7 @@ public class AdminServiceTest {
 
     adminService =
         new AdminService(
-            userDao,
-            teamDao,
-            teamMemberDao,
-            requestDao,
-            eventDao,
-            registrationDao,
-            paymentDao);
+            userDao, teamDao, teamMemberDao, requestDao, eventDao, registrationDao, paymentDao);
 
     adminId =
         daoTestRule.inTransaction(
@@ -136,8 +126,7 @@ public class AdminServiceTest {
     createReq.setPassword("password123");
     createReq.setRole(Role.USER);
 
-    UserResponse createdUser =
-        daoTestRule.inTransaction(() -> adminService.createUser(createReq));
+    UserResponse createdUser = daoTestRule.inTransaction(() -> adminService.createUser(createReq));
     assertNotNull(createdUser.getId());
     assertEquals("User One", createdUser.getName());
 
@@ -145,7 +134,9 @@ public class AdminServiceTest {
     daoTestRule.inTransaction(
         () ->
             adminService.resetUserPassword(
-                createdUser.getId(), new AdminResetPasswordRequest("newsecret123"), adminPrincipal));
+                createdUser.getId(),
+                new AdminResetPasswordRequest("newsecret123"),
+                adminPrincipal));
 
     AdminUpdateVerificationRequest verifyReq = new AdminUpdateVerificationRequest(true, false);
     UserResponse updatedVerification =
@@ -173,9 +164,7 @@ public class AdminServiceTest {
 
     assertThrows(
         BadRequestException.class,
-        () ->
-            daoTestRule.inTransaction(
-                () -> adminService.deleteUser(adminId, adminPrincipal)));
+        () -> daoTestRule.inTransaction(() -> adminService.deleteUser(adminId, adminPrincipal)));
   }
 
   @Test
@@ -204,17 +193,14 @@ public class AdminServiceTest {
         new AdminUpdateEventStatusRequest(EventStatus.PUBLISHED);
     EventResponse publishedEvent =
         daoTestRule.inTransaction(
-            () ->
-                adminService.updateEventStatus(
-                    eventResponse.getId(), statusReq, adminPrincipal));
+            () -> adminService.updateEventStatus(eventResponse.getId(), statusReq, adminPrincipal));
     assertEquals(EventStatus.PUBLISHED, publishedEvent.getStatus());
 
     // 3. Force register user
     AdminForceRegisterRequest regReq =
         new AdminForceRegisterRequest(eventResponse.getId(), adminId, null);
     EventRegistrationResponse regResponse =
-        daoTestRule.inTransaction(
-            () -> adminService.forceRegisterUser(regReq, adminPrincipal));
+        daoTestRule.inTransaction(() -> adminService.forceRegisterUser(regReq, adminPrincipal));
     assertEquals(RegistrationStatus.REGISTERED, regResponse.getStatus());
 
     // 4. Update registration status
@@ -310,14 +296,12 @@ public class AdminServiceTest {
         new AdminUpdatePaymentStatusRequest(PaymentStatus.COMPLETED);
     PaymentResponse updatedPay =
         daoTestRule.inTransaction(
-            () ->
-                adminService.updatePaymentStatus(paymentId, updatePayReq, adminPrincipal));
+            () -> adminService.updatePaymentStatus(paymentId, updatePayReq, adminPrincipal));
     assertEquals(PaymentStatus.COMPLETED, updatedPay.getStatus());
     assertNotNull(updatedPay.getPaidAt());
 
     // 6. Test system stats
-    SystemStatsResponse stats =
-        daoTestRule.inTransaction(() -> adminService.getSystemStats());
+    SystemStatsResponse stats = daoTestRule.inTransaction(() -> adminService.getSystemStats());
     assertTrue(stats.getTotalUsers() >= 2);
     assertTrue(stats.getTotalEvents() >= 1);
     assertTrue(stats.getTotalTeams() >= 1);
