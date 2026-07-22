@@ -9,7 +9,9 @@ A backend API for running events end-to-end: user auth, event creation, team for
 - **Auth:** JWT (`java-jwt`) + BCrypt (`jbcrypt`) password hashing
 - **Payments:** Razorpay Java SDK (orders, verification, webhooks)
 - **Email:** Jakarta Mail (SMTP)
+- **SMS:** Twilio Java SDK (OTP delivery)
 - **RateLimiter:** Bucket4j
+- **Logging:** SLF4J + Logback, with request-scoped tracing via MDC
 - **Build:** Maven, with Spotless, Checkstyle, and PMD wired in for code quality
 - **Containerization:** Docker Compose (Postgres)
 
@@ -17,7 +19,7 @@ A backend API for running events end-to-end: user auth, event creation, team for
 
 **Auth & Verification**
 - Register / login with JWT-based sessions
-- Email OTP and phone OTP verification flows (phone OTP currently logs to console instead of sending a real SMS — see Roadmap)
+- Email OTP (SMTP) and phone OTP (Twilio SMS) verification flows, pluggable behind a common `SmsService` interface (a `ConsoleSmsService` is also available for local dev without Twilio credentials)
 - Role-based access control: `USER` < `MODERATOR` < `ADMIN`, enforced via `@RolesAllowed` and a custom `RoleAuthorizer`
 
 **Events**
@@ -27,13 +29,17 @@ A backend API for running events end-to-end: user auth, event creation, team for
 
 **Teams**
 - Create teams per event, transfer ownership, remove members
-- Join requests and invitations, each with accept/reject flows
-- Per-user view of teams and pending requests across events
+- Join requests and invitations, each with accept/reject flows, guarded by optimistic locking (`@Version`) and tracked member counts to prevent race conditions on concurrent join attempts
+- Per-user endpoints (`/api/teams/me`, `/api/team-requests/me`) for a user's own teams and pending requests across events
 
 **Registrations & Payments**
 - Register for an event solo or as a team
 - Razorpay order creation, payment verification (signature-checked), failure handling, and webhook support for `payment.captured` / `payment.failed`
 - Registration/payment status kept in sync (`PENDING → REGISTERED/COMPLETED`, etc.)
+
+**Observability**
+- Request-scoped tracing: every request gets an `X-Request-ID` (client-supplied or generated), propagated through logs via SLF4J MDC and echoed back in the response header
+- Structured SLF4J logging across resources, services, and DAOs for action-level traceability
 
 **Admin**
 - Manage users (create, update, change role, delete), search by email/phone
@@ -59,6 +65,7 @@ Edit `config.yml` — at minimum set real values for:
 - `razorpay.keyId` / `razorpay.keySecret` / `razorpay.webhookSecret`
 - `jwt.secret` (use a strong secret outside of local dev)
 - `emailservice.username` / `password` (SMTP credentials)
+- `twilio.accountSid` / `authToken` / `fromPhoneNumber` (for phone OTP SMS)
 - `bootstrapadmin.*` (initial admin account)
 
 ### 3. Build and run
@@ -84,6 +91,7 @@ Runs Spotless formatting, compile, tests, Checkstyle, and PMD.
 | Events | `/api/events` | CRUD + publish/cancel/complete (MODERATOR+) |
 | Teams | `/api/events/{eventId}/teams` | create/update/delete, membership, ownership transfer |
 | Team requests | `/api/events/{eventId}/teams/{teamId}/requests`, `/invitations` | join requests & invites |
+| User teams | `/api/teams/me`, `/api/team-requests/me` | current user's teams & pending requests |
 | Registrations | `/api/events/{eventId}/registrations` | register/cancel |
 | Payments | `/api/payments` | order creation, verification, failure |
 | Webhooks | `/webhooks/razorpay` | Razorpay payment webhooks |
@@ -105,16 +113,16 @@ src/main/java/com/rupesh/ems/
 ├── core/         # JPA entities and enums
 ├── db/           # DAOs (Hibernate-based data access)
 ├── exceptions/   # Custom API exceptions
+├── logging/      # Request-ID filter (MDC-based tracing)
 ├── mappers/      # JAX-RS exception mappers → consistent error responses
 ├── resources/    # JAX-RS REST endpoints (controllers)
-└── service/      # Business logic
+└── service/      # Business logic (incl. sms/ for SmsService implementations)
 ```
 
 ## Roadmap / Not Yet Implemented
 
 Things still on the todo list for this project:
 
-- **Real SMS provider** — phone OTP currently only logs to console via `ConsoleSmsService`; needs a real provider integration (e.g. Twilio) behind the existing `SmsService` interface.
 - **Event search/filtering & pagination** — `getAllEvents` / `getVisibleEvents` currently return unpaginated full lists; needs query params for search, filters (type, status, date range), and pagination.
 - **Refresh tokens** — auth currently issues a single JWT with a fixed expiry; no refresh/rotation flow yet.
 - **File uploads** — no support yet for event banners/images or user avatars.
