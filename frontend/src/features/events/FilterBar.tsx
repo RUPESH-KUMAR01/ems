@@ -4,7 +4,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { toEpochMs } from '@/lib/iso-datetime'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 export type EventFilters = {
   search: string
@@ -22,8 +22,12 @@ const defaultFilters: EventFilters = {
   deadlineWithinDays: '',
 }
 
-export function useEventFilters(events: EventResponse[]) {
-  const [filters, setFilters] = useState<EventFilters>(defaultFilters)
+export function useEventFilters(events: EventResponse[], initialType: EventFilters['type'] = 'ALL') {
+  const [filters, setFilters] = useState<EventFilters>(() => ({ ...defaultFilters, type: initialType }))
+
+  useEffect(() => {
+    setFilters((current) => current.type === initialType ? current : { ...current, type: initialType })
+  }, [initialType])
 
   const filtered = useMemo(() => {
     return events.filter((e) => {

@@ -13,6 +13,17 @@ function stampFromFee(fee: number, status?: string): StampVariant {
   return 'pending'
 }
 
+function deadlineLabel(deadline: string) {
+  const date = new Date(deadline)
+  if (Number.isNaN(date.getTime())) return formatDateShort(deadline)
+  const days = Math.ceil((date.getTime() - Date.now()) / 86400000)
+  if (days < 0) return 'Registration closed'
+  if (days === 0) return 'Closes today'
+  if (days === 1) return '1 day left'
+  if (days <= 7) return `${days} days left`
+  return formatDateShort(deadline)
+}
+
 export function EventPass({
   event,
   stamp,
@@ -24,40 +35,31 @@ export function EventPass({
   className?: string
   to?: string
 }) {
-  const teaser = event.description.trim().slice(0, 80)
+  const teaser = event.description.trim().slice(0, 112)
+  const fee = Number(event.registrationFee)
+  const closed = ['CANCELLED', 'COMPLETED'].includes(event.status) || new Date(event.registrationDeadline).getTime() < Date.now()
   const body = (
-    <article
-      className={cn(
-        'relative overflow-hidden rounded-lg border border-border bg-surface shadow-[0_8px_24px_var(--shadow)]',
-        'before:absolute before:left-0 before:top-1/2 before:h-8 before:w-4 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:bg-paper',
-        className,
-      )}
-    >
-      <div className="border-b border-dashed border-border px-5 py-4">
-        <PassStamp variant={stamp ?? stampFromFee(Number(event.registrationFee), event.status)} />
-        <h3 className="font-display text-xl font-semibold pr-20">{event.name}</h3>
-        <p className="mt-1 text-sm text-ink-muted tabular">{formatDateShort(event.registrationDeadline)}</p>
+    <article className={cn('event-opportunity-card group', closed && 'event-opportunity-closed', className)}>
+      <div className="opportunity-art">
+        <div className={cn('opportunity-art-shape', event.type === 'TEAM' ? 'shape-team' : 'shape-solo')}>
+          <span>{event.type === 'TEAM' ? 'T' : 'S'}</span>
+        </div>
+        <span className="opportunity-category">{event.type === 'TEAM' ? 'TEAM CHALLENGE' : 'INDIVIDUAL'}</span>
+        <span className="opportunity-stamp"><PassStamp variant={stamp ?? stampFromFee(fee, event.status)} /></span>
+        <span className="opportunity-art-index">EMS / {String(event.id).padStart(3, '0')}</span>
       </div>
-      <div className="grid gap-2 px-5 py-4 text-sm">
-        <p className="text-ink-muted line-clamp-2">{teaser}{event.description.length > 80 ? '…' : ''}</p>
-        <div className="flex items-center justify-between tabular">
-          <span className="text-ink-muted">{event.type === 'TEAM' ? 'Team event' : 'Solo'}</span>
-          <span className="font-medium">
-            {Number(event.registrationFee) > 0
-              ? formatInr(event.registrationFee)
-              : 'No fee'}
-          </span>
+      <div className="opportunity-body">
+        <div className="opportunity-meta"><span>{event.type === 'TEAM' ? 'Built together' : 'Made for you'}</span><span className="opportunity-dot">·</span><span>{deadlineLabel(event.registrationDeadline)}</span></div>
+        <h3>{event.name}</h3>
+        <p className="opportunity-description">{teaser}{event.description.length > 112 ? '…' : ''}</p>
+        <div className="opportunity-footer">
+          <div className="opportunity-fee"><span>ENTRY</span><strong>{fee > 0 ? formatInr(event.registrationFee) : 'Free'}</strong></div>
+          <span className="opportunity-open" aria-hidden="true">↗</span>
         </div>
       </div>
     </article>
   )
 
-  if (to) {
-    return (
-      <Link to={to} className="block transition hover:-translate-y-0.5">
-        {body}
-      </Link>
-    )
-  }
+  if (to) return <Link to={to} className="event-opportunity-link">{body}</Link>
   return body
 }

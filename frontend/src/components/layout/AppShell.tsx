@@ -4,65 +4,54 @@ import { cn } from '@/lib/cn'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
-  cn('text-sm', isActive ? 'text-ink font-medium' : 'text-ink-muted hover:text-ink')
+  cn('nav-link', isActive && 'nav-link-active')
 
 export function AppShell() {
   const { isAuthenticated, user, logout, hasRole } = useAuth()
   const { dark, toggle } = useTheme()
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="no-print sticky top-0 z-30 border-b border-border bg-paper/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <Link to="/" className="font-display text-lg font-bold tracking-tight">
-            EMS Pass
-          </Link>
-          <nav className="hidden items-center gap-4 md:flex">
-            <NavLink to="/events" className={linkClass}>Events</NavLink>
+    <div className="app-frame min-h-screen flex flex-col">
+      <header className="site-header no-print">
+        <div className="header-inner">
+          <Link to="/" className="brand" aria-label="EMS home"><span className="brand-symbol">e</span><span className="brand-word">ems<span className="brand-reg">®</span></span></Link>
+          <nav className="desktop-nav" aria-label="Main navigation">
+            <NavLink to="/events" className={linkClass}>Discover</NavLink>
             {isAuthenticated ? (
               <>
-                <NavLink to="/entries" className={linkClass}>My entries</NavLink>
+                <NavLink to="/entries" className={linkClass}>My passes</NavLink>
                 <NavLink to="/teams" className={linkClass}>Teams</NavLink>
-                {hasRole('MODERATOR') ? (
-                  <NavLink to="/manage/events" className={linkClass}>Manage</NavLink>
-                ) : null}
-                {user?.role === 'ADMIN' ? (
-                  <NavLink to="/admin" className={linkClass}>Admin</NavLink>
-                ) : null}
-                <NavLink to="/profile" className={linkClass}>Profile</NavLink>
+                {hasRole('MODERATOR') ? <NavLink to="/manage/events" className={linkClass}>Manage</NavLink> : null}
+                {user?.role === 'ADMIN' ? <NavLink to="/admin" className={linkClass}>Admin</NavLink> : null}
+              </>
+            ) : null}
+          </nav>
+          <div className="header-actions">
+            <button type="button" className="theme-toggle" onClick={toggle} aria-label="Toggle color theme"><span>{dark ? '☼' : '☾'}</span></button>
+            {isAuthenticated ? (
+              <>
+                <Link to="/profile" className="header-profile"><span className="profile-dot">{(user?.name ?? 'U').slice(0,1).toUpperCase()}</span><span className="profile-name">{user?.name?.split(' ')[0] ?? 'Profile'}</span></Link>
+                <button type="button" className="header-signout" onClick={logout}>Sign out</button>
               </>
             ) : (
               <>
-                <NavLink to="/login" className={linkClass}>Log in</NavLink>
-                <NavLink to="/signup" className={linkClass}>Sign up</NavLink>
+                <Link to="/login" className="header-login">Log in</Link>
+                <Link to="/signup" className="header-join">Get your pass <span>↗</span></Link>
               </>
             )}
-          </nav>
-          <div className="flex items-center gap-2">
-            <button type="button" className="text-sm" onClick={toggle} aria-label="Toggle theme">
-              {dark ? 'Light' : 'Dark'}
-            </button>
-            {isAuthenticated ? (
-              <button type="button" className="text-sm text-ink-muted" onClick={logout}>
-                Sign out
-              </button>
-            ) : null}
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-20 md:pb-6">
+      <main className="app-main w-full flex-1">
         <Outlet />
       </main>
 
-      <nav
-        className="no-print fixed bottom-0 left-0 right-0 flex border-t border-border bg-surface md:hidden"
-        aria-label="Mobile"
-      >
-        <NavLink to="/events" className="flex-1 py-3 text-center text-xs">Events</NavLink>
-        <NavLink to="/entries" className="flex-1 py-3 text-center text-xs">Entries</NavLink>
-        <NavLink to="/teams" className="flex-1 py-3 text-center text-xs">Teams</NavLink>
-        <NavLink to="/profile" className="flex-1 py-3 text-center text-xs">Profile</NavLink>
+      <nav className="mobile-nav no-print" aria-label="Mobile navigation">
+        <NavLink to="/events" className={linkClass}><span>◈</span>Discover</NavLink>
+        <NavLink to="/entries" className={linkClass}><span>▤</span>Passes</NavLink>
+        <NavLink to="/teams" className={linkClass}><span>◎</span>Teams</NavLink>
+        <NavLink to="/profile" className={linkClass}><span>◉</span>Profile</NavLink>
       </nav>
     </div>
   )

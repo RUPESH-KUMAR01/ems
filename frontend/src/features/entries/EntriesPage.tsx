@@ -46,16 +46,16 @@ export function EntriesPage() {
   })
 
   if (registrationsQuery.isLoading) {
-    return <p className="text-ink-muted">Loading your entries…</p>
+    return <p className="account-page text-ink-muted">Loading your entries…</p>
   }
 
   if (registrationsQuery.isError) {
-    return <p className="text-signal">Could not load your registrations.</p>
+    return <p className="account-page text-signal">Could not load your registrations.</p>
   }
 
   if (!registrations.length) {
     return (
-      <div className="space-y-2">
+      <div className="account-page space-y-2">
         <h1 className="text-3xl font-bold">My entries</h1>
         <p className="text-ink-muted text-sm">
           No entries yet. Browse events and complete registration, payment, and profile verification
@@ -67,7 +67,7 @@ export function EntriesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="account-page space-y-6">
       <h1 className="text-3xl font-bold">My entries</h1>
       {!profileComplete ? (
         <p className="text-sm text-stamp">
