@@ -67,7 +67,7 @@ export function LandingPage() {
         </div>
         <div className="path-grid">
           {paths.map((path) => (
-            <Link key={path.number} to="/events" className="path-card">
+            <Link key={path.number} to={`/events?type=${path.type}`} className="path-card">
               <span className="path-number">{path.number} / OPPORTUNITY</span>
               <span className="path-arrow">↗</span>
               <h3>{path.title}</h3><p>{path.detail}</p>
