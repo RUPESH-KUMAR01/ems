@@ -60,9 +60,9 @@ export function EntryDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="no-print flex justify-between">
+      <div className="no-print flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-bold">Your pass</h1>
-        <Button type="button" variant="ghost" onClick={() => window.print()}>Print</Button>
+        <Button type="button" variant="secondary" className="shrink-0 self-center" onClick={() => window.print()}>Print</Button>
       </div>
       <PassPrintView
         event={eventQuery.data}
