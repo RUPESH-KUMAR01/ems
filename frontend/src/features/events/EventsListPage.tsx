@@ -3,13 +3,17 @@ import { PassGrid } from '@/components/pass/PassGrid'
 import { PassSkeleton } from '@/components/pass/PassSkeleton'
 import { FilterBar, FilterSheet, useEventFilters } from '@/features/events/FilterBar'
 import { useQuery } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 
 export function EventsListPage() {
+  const [searchParams] = useSearchParams()
+  const requestedType = searchParams.get('type')
+  const initialType = requestedType === 'SOLO' || requestedType === 'TEAM' ? requestedType : 'ALL'
   const { data = [], isLoading, isError } = useQuery({
     queryKey: ['events', 'visible'],
     queryFn: listVisibleEvents,
   })
-  const { filters, setFilters, filtered } = useEventFilters(data)
+  const { filters, setFilters, filtered } = useEventFilters(data, initialType)
 
   return (
     <div className="opportunities-page">
@@ -27,7 +31,7 @@ export function EventsListPage() {
         <FilterSheet filters={filters} onChange={setFilters} />
       </section>
       <section className="opportunities-results">
-        <div className="opportunities-results-head"><h2>{filters.search ? 'Search results' : 'All opportunities'}<span> ↘</span></h2><p>Good things happen when you show up.</p></div>
+        <div className="opportunities-results-head"><h2>{filters.search ? 'Search results' : filters.type === 'SOLO' ? 'Individual challenges' : filters.type === 'TEAM' ? 'Team opportunities' : 'All opportunities'}<span> ↘</span></h2><p>Good things happen when you show up.</p></div>
         {isLoading ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"><PassSkeleton /><PassSkeleton /><PassSkeleton /></div>
         ) : isError ? (
