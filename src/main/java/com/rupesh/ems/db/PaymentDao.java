@@ -1,7 +1,9 @@
 package com.rupesh.ems.db;
 
 import com.rupesh.ems.core.Payment;
+import com.rupesh.ems.core.PaymentStatus;
 import io.dropwizard.hibernate.AbstractDAO;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import org.hibernate.SessionFactory;
@@ -36,15 +38,27 @@ public class PaymentDao extends AbstractDAO<Payment> {
 
   public Optional<Payment> findByRegistrationId(Long registrationId) {
     LOGGER.debug("DAO: Fetching payment by registrationId={}", registrationId);
+    List<Payment> payments = findAllByRegistrationId(registrationId);
+    if (payments.isEmpty()) {
+      return Optional.empty();
+    }
+    return payments.stream()
+        .filter(p -> p.getStatus() == PaymentStatus.COMPLETED)
+        .max(Comparator.comparing(Payment::getId))
+        .or(() -> Optional.of(payments.get(0)));
+  }
+
+  public List<Payment> findAllByRegistrationId(Long registrationId) {
     return currentSession()
         .createQuery(
             """
             FROM Payment
             WHERE registrationId = :registrationId
+            ORDER BY id DESC
             """,
             Payment.class)
         .setParameter("registrationId", registrationId)
-        .uniqueResultOptional();
+        .getResultList();
   }
 
   public Optional<Payment> findByProviderOrderId(String providerOrderId) {

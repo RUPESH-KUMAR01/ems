@@ -21,11 +21,19 @@ import com.rupesh.ems.db.UserDao;
 import com.rupesh.ems.db.VerificationDao;
 import com.rupesh.ems.logging.RequestIdFilter;
 import com.rupesh.ems.mappers.ApiExceptionMapper;
+import com.rupesh.ems.mappers.ConstraintViolationExceptionMapper;
+import com.rupesh.ems.mappers.GenericExceptionMapper;
+import com.rupesh.ems.mappers.IllegalArgumentExceptionMapper;
+import com.rupesh.ems.mappers.IllegalStateExceptionMapper;
+import com.rupesh.ems.mappers.NoSuchElementExceptionMapper;
+import com.rupesh.ems.mappers.HibernateConstraintViolationExceptionMapper;
+import com.rupesh.ems.mappers.PersistenceExceptionMapper;
 import com.rupesh.ems.ratelimit.RateLimitFilter;
 import com.rupesh.ems.ratelimit.RateLimitService;
 import com.rupesh.ems.resources.AdminResource;
 import com.rupesh.ems.resources.AuthResource;
 import com.rupesh.ems.resources.EventRegistrationResource;
+import com.rupesh.ems.resources.UserRegistrationsResource;
 import com.rupesh.ems.resources.EventResource;
 import com.rupesh.ems.resources.EventTeamResource;
 import com.rupesh.ems.resources.PaymentResource;
@@ -44,13 +52,14 @@ import com.rupesh.ems.service.PaymentService;
 import com.rupesh.ems.service.VerificationService;
 import com.rupesh.ems.service.email.EmailService;
 import com.rupesh.ems.service.email.SMTPEmailService;
-import com.rupesh.ems.service.sms.ConsoleSmsService;
 import com.rupesh.ems.service.sms.SmsService;
 import com.rupesh.ems.service.sms.TwilioSmsService;
 
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
@@ -91,6 +100,10 @@ public class EventManagementSystemApplication
 
   @Override
   public void initialize(final Bootstrap<EventManagementSystemConfiguration> bootstrap) {
+    bootstrap.setConfigurationSourceProvider(
+        new SubstitutingSourceProvider(
+            bootstrap.getConfigurationSourceProvider(),
+            new EnvironmentVariableSubstitutor(false)));
     bootstrap.addBundle(hibernateBundle);
   }
 
@@ -167,12 +180,20 @@ public class EventManagementSystemApplication
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(UserPrincipal.class));
     environment.jersey().register(RolesAllowedDynamicFeature.class);
     environment.jersey().register(ApiExceptionMapper.class);
+    environment.jersey().register(GenericExceptionMapper.class);
+    environment.jersey().register(PersistenceExceptionMapper.class);
+    environment.jersey().register(HibernateConstraintViolationExceptionMapper.class);
+    environment.jersey().register(ConstraintViolationExceptionMapper.class);
+    environment.jersey().register(IllegalArgumentExceptionMapper.class);
+    environment.jersey().register(IllegalStateExceptionMapper.class);
+    environment.jersey().register(NoSuchElementExceptionMapper.class);
     environment.jersey().register(new AuthResource(authService, verificationService));
     environment.jersey().register(new AdminResource(adminService));
     environment.jersey().register(new EventResource(eventService));
     environment.jersey().register(new EventTeamResource(eventTeamService, eventTeamRequestService));
     environment.jersey().register(new UserTeamResource(eventTeamService, eventTeamRequestService));
     environment.jersey().register(new EventRegistrationResource(eventRegistrationService));
+    environment.jersey().register(new UserRegistrationsResource(eventRegistrationService));
     environment.jersey().register(new PaymentResource(paymentService));
     environment.jersey().register(new WebhookResource(paymentService));
     environment.jersey().register(new SwaggerDocsResource());

@@ -87,6 +87,27 @@ public class TeamMembershipRequestDao extends AbstractDAO<TeamMembershipRequest>
         .getResultList();
   }
 
+  public Optional<TeamMembershipRequest> findPendingRequestForEventAndUser(
+      Long eventId, Long userId) {
+    LOGGER.debug(
+        "DAO: Fetching pending membership request for eventId={} userId={}", eventId, userId);
+    return currentSession()
+        .createQuery(
+            """
+            SELECT tmr
+            FROM TeamMembershipRequest tmr
+            JOIN Team t ON t.id = tmr.teamId
+            WHERE t.eventId = :eventId
+              AND tmr.userId = :userId
+              AND tmr.status = :status
+            """,
+            TeamMembershipRequest.class)
+        .setParameter("eventId", eventId)
+        .setParameter("userId", userId)
+        .setParameter("status", RequestStatus.PENDING)
+        .uniqueResultOptional();
+  }
+
   public List<TeamMembershipRequest> getPendingRequestsByUserId(Long userId) {
     LOGGER.debug("DAO: Fetching pending requests for userId={}", userId);
     return currentSession()

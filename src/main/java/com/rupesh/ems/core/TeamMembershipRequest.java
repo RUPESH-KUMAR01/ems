@@ -60,6 +60,10 @@ public class TeamMembershipRequest {
     return type;
   }
 
+  public void setType(RequestType type) {
+    this.type = type;
+  }
+
   public RequestStatus getStatus() {
     return status;
   }

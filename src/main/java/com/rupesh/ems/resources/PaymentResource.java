@@ -34,7 +34,7 @@ public class PaymentResource {
   public CreateOrderResponse createOrder(
       @Valid CreateOrderRequest request, @Auth UserPrincipal user) {
     LOGGER.info("Creating order for registration {}", request.getRegistrationId());
-    return paymentService.createOrder(request.getRegistrationId());
+    return paymentService.createOrder(request.getRegistrationId(), user.getId());
   }
 
   @POST
@@ -67,6 +67,6 @@ public class PaymentResource {
   public PaymentResponse getPaymentByRegistration(
       @PathParam("registrationId") Long registrationId, @Auth UserPrincipal user) {
     LOGGER.info("Fetching payment information for registration {}", registrationId);
-    return paymentService.getPaymentByRegistrationId(registrationId);
+    return paymentService.getPaymentByRegistrationId(registrationId, user.getId());
   }
 }

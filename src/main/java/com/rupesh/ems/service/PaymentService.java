@@ -22,6 +22,7 @@ import com.rupesh.ems.exceptions.InternalServerException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +32,15 @@ public class PaymentService {
 
   private static final String EVENT_PAYMENT_CAPTURED = "payment.captured";
   private static final String EVENT_PAYMENT_FAILED = "payment.failed";
+  static final String MOCK_KEY_ID = "rzp_test_mock";
+  static final String MOCK_ORDER_PREFIX = "order_mock_";
+  static final String MOCK_PAYMENT_PREFIX = "pay_mock_";
+  static final String MOCK_SIGNATURE = "mock";
 
   private final PaymentDao paymentDao;
   private final EventRegistrationDao registrationDao;
   private final EventDao eventDao;
+  private final boolean mockPayments;
   private final RazorpayClient razorpayClient;
   private final String razorpayKeyId;
   private final String razorpayKeySecret;
@@ -48,9 +54,18 @@ public class PaymentService {
     this.paymentDao = paymentDao;
     this.registrationDao = registrationDao;
     this.eventDao = eventDao;
+    this.mockPayments = razorpayConfig.isMockPayments();
     this.razorpayKeyId = razorpayConfig.getKeyId();
     this.razorpayKeySecret = razorpayConfig.getKeySecret();
     this.webhookSecret = razorpayConfig.getWebhookSecret();
+
+    if (mockPayments) {
+      LOGGER.warn(
+          "Razorpay mock payments enabled — orders will not call Razorpay. "
+              + "Set razorpay.mockPayments to false and provide valid API keys for live checkout.");
+      this.razorpayClient = null;
+      return;
+    }
 
     try {
       this.razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
@@ -59,7 +74,21 @@ public class PaymentService {
     }
   }
 
-  public CreateOrderResponse createOrder(Long registrationId) {
+  private static boolean isMockOrderId(String razorpayOrderId) {
+    return razorpayOrderId != null && razorpayOrderId.startsWith(MOCK_ORDER_PREFIX);
+  }
+
+  private boolean isMockVerification(
+      String razorpayOrderId, String razorpayPaymentId, String razorpaySignature) {
+    if (!mockPayments && !isMockOrderId(razorpayOrderId)) {
+      return false;
+    }
+    return MOCK_SIGNATURE.equals(razorpaySignature)
+        && razorpayPaymentId != null
+        && razorpayPaymentId.startsWith(MOCK_PAYMENT_PREFIX);
+  }
+
+  public CreateOrderResponse createOrder(Long registrationId, Long userId) {
     LOGGER.info("Creating order for registration {}", registrationId);
     EventRegistration registration =
         registrationDao
@@ -70,20 +99,26 @@ public class PaymentService {
                   throw new NotFoundException("Registration not found");
                 });
 
+    if (!registration.getUserId().equals(userId)) {
+      LOGGER.warn(
+          "User {} attempted to pay for registration {} owned by {}",
+          userId,
+          registrationId,
+          registration.getUserId());
+      throw new ForbiddenException("You can only pay for your own registration");
+    }
+
     if (registration.getStatus() == RegistrationStatus.CANCELLED) {
       LOGGER.warn("Cannot create order for cancelled registration ID: {}", registrationId);
       throw new BadRequestException("Cannot pay for a cancelled registration");
     }
 
-    paymentDao
-        .findByRegistrationId(registrationId)
-        .ifPresent(
-            existing -> {
-              if (existing.getStatus() == PaymentStatus.COMPLETED) {
-                LOGGER.warn("Payment already completed for registration ID: {}", registrationId);
-                throw new ConflictException("Payment already completed for this registration");
-              }
-            });
+    Optional<Payment> existingPayment = paymentDao.findByRegistrationId(registrationId);
+    if (existingPayment.isPresent()
+        && existingPayment.get().getStatus() == PaymentStatus.COMPLETED) {
+      LOGGER.warn("Payment already completed for registration ID: {}", registrationId);
+      throw new ConflictException("Payment already completed for this registration");
+    }
 
     Event event =
         eventDao
@@ -101,6 +136,33 @@ public class PaymentService {
       registration.setStatus(RegistrationStatus.REGISTERED);
       registrationDao.update(registration);
       throw new BadRequestException("This event does not require payment");
+    }
+
+    if (existingPayment.isPresent()
+        && existingPayment.get().getStatus() == PaymentStatus.PENDING) {
+      Payment pending = existingPayment.get();
+      LOGGER.info(
+          "Reusing pending Razorpay order {} for registration {}",
+          pending.getProviderOrderId(),
+          registrationId);
+      return new CreateOrderResponse(
+          pending.getId(),
+          pending.getProviderOrderId(),
+          pending.getAmount(),
+          "INR",
+          mockPayments ? MOCK_KEY_ID : razorpayKeyId);
+    }
+
+    if (mockPayments) {
+      String razorpayOrderId = MOCK_ORDER_PREFIX + registrationId + "_" + Instant.now().toEpochMilli();
+      Payment payment = new Payment(registrationId, fee, razorpayOrderId);
+      payment = paymentDao.create(payment);
+      LOGGER.info(
+          "Mock Razorpay order {} for registration {} (amount {} INR)",
+          razorpayOrderId,
+          registrationId,
+          fee);
+      return new CreateOrderResponse(payment.getId(), razorpayOrderId, fee, "INR", MOCK_KEY_ID);
     }
 
     // Razorpay expects amount in paise (smallest currency unit)
@@ -154,29 +216,33 @@ public class PaymentService {
       throw new ConflictException("Payment already completed");
     }
 
-    // Verify signature using Razorpay Utils
-    try {
-      JSONObject attributes = new JSONObject();
-      attributes.put("razorpay_order_id", razorpayOrderId);
-      attributes.put("razorpay_payment_id", razorpayPaymentId);
-      attributes.put("razorpay_signature", razorpaySignature);
+    if (!isMockVerification(razorpayOrderId, razorpayPaymentId, razorpaySignature)) {
+      // Verify signature using Razorpay Utils
+      try {
+        JSONObject attributes = new JSONObject();
+        attributes.put("razorpay_order_id", razorpayOrderId);
+        attributes.put("razorpay_payment_id", razorpayPaymentId);
+        attributes.put("razorpay_signature", razorpaySignature);
 
-      boolean isValid = Utils.verifyPaymentSignature(attributes, razorpayKeySecret);
+        boolean isValid = Utils.verifyPaymentSignature(attributes, razorpayKeySecret);
 
-      if (!isValid) {
+        if (!isValid) {
+          payment.setStatus(PaymentStatus.FAILED);
+          LOGGER.warn(
+              "Payment signature verification failed for registration ID: {}",
+              payment.getRegistrationId());
+          paymentDao.update(payment);
+          throw new BadRequestException("Payment signature verification failed");
+        }
+      } catch (RazorpayException e) {
         payment.setStatus(PaymentStatus.FAILED);
-        LOGGER.warn(
-            "Payment signature verification failed for registration ID: {}",
-            payment.getRegistrationId());
+        LOGGER.error(
+            "Failed to verify payment for registration ID: {}", payment.getRegistrationId(), e);
         paymentDao.update(payment);
-        throw new BadRequestException("Payment signature verification failed");
+        throw new BadRequestException("Payment verification failed: " + e.getMessage());
       }
-    } catch (RazorpayException e) {
-      payment.setStatus(PaymentStatus.FAILED);
-      LOGGER.error(
-          "Failed to verify payment for registration ID: {}", payment.getRegistrationId(), e);
-      paymentDao.update(payment);
-      throw new BadRequestException("Payment verification failed: " + e.getMessage());
+    } else {
+      LOGGER.info("Accepted mock payment for order {}", razorpayOrderId);
     }
 
     payment = completePayment(payment, razorpayPaymentId);
@@ -202,8 +268,24 @@ public class PaymentService {
     return new PaymentResponse(payment);
   }
 
-  public PaymentResponse getPaymentByRegistrationId(Long registrationId) {
+  public PaymentResponse getPaymentByRegistrationId(Long registrationId, Long userId) {
     LOGGER.info("Fetching payment information for registration {}", registrationId);
+    EventRegistration registration =
+        registrationDao
+            .getById(registrationId)
+            .orElseThrow(
+                () -> {
+                  LOGGER.warn("Registration not found for ID: {}", registrationId);
+                  throw new NotFoundException("Registration not found");
+                });
+    if (!registration.getUserId().equals(userId)) {
+      LOGGER.warn(
+          "User {} attempted to read payment for registration {} owned by {}",
+          userId,
+          registrationId,
+          registration.getUserId());
+      throw new ForbiddenException("You can only view your own payments");
+    }
     Payment payment =
         paymentDao
             .findByRegistrationId(registrationId)

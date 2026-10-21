@@ -62,15 +62,33 @@ This starts Postgres on `localhost:5433` (db: `ems`, user/pass: `postgres`/`post
 
 ### 2. Configure the app
 Edit `config.yml` — at minimum set real values for:
-- `razorpay.keyId` / `razorpay.keySecret` / `razorpay.webhookSecret`
+- **Razorpay** — by default `razorpay.mockPayments: true` so paid registration works locally without API keys. For real Razorpay test checkout: copy `.env.example` → `.env`, set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` (same pair from the dashboard), set `razorpay.mockPayments: false`, restart the backend. Use `./scripts/dev-backend.sh` to load `.env` automatically.
 - `jwt.secret` (use a strong secret outside of local dev)
 - `emailservice.username` / `password` (SMTP credentials)
 - `twilio.accountSid` / `authToken` / `fromPhoneNumber` (for phone OTP SMS)
 - `bootstrapadmin.*` (initial admin account)
 
 ### 3. Build and run
+
+**Recommended (loads `.env` for Razorpay):**
+
 ```bash
-mvn clean install
+mvn clean install -DskipTests   # first time or after Java changes
+./scripts/dev-backend.sh        # start API on :8080
+```
+
+**Stop or restart** (if you see `Address already in use` on 8080, a copy is already running):
+
+```bash
+./scripts/stop-backend.sh           # stop the JVM
+./scripts/dev-backend.sh --restart  # stop, then start (after config/JAR changes)
+```
+
+Scripts live in the repo’s [`scripts/`](scripts/) folder: `dev-backend.sh`, `stop-backend.sh`, `check.sh`.
+
+Manual start (no `.env` auto-load):
+
+```bash
 java -jar target/event-management-system-1.0-SNAPSHOT.jar server config.yml
 ```
 

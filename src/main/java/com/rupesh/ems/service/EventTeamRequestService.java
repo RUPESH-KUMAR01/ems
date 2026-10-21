@@ -15,6 +15,9 @@ import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import jakarta.persistence.PersistenceException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,14 +50,14 @@ public class EventTeamRequestService {
     eventTeamService.ensureTeamCanAcceptMember(eventId, teamId);
     eventTeamService.ensureNotTeamMember(
         teamId, user.getId(), "You are already a member of this team");
-    ensureNoPendingMembershipRequest(
-        teamId, user.getId(), "You already have a membership request for this team");
-
-    TeamMembershipRequest request =
-        new TeamMembershipRequest(teamId, user.getId(), RequestType.JOIN_REQUEST);
     LOGGER.info(
         "UserId={} has requested to join teamId={} for eventId={}", user.getId(), teamId, eventId);
-    return new TeamMembershipResponse(teamMembershipRequestDao.create(request));
+    return toResponse(
+        createOrReopenPendingMembershipRequest(
+            teamId,
+            user.getId(),
+            RequestType.JOIN_REQUEST,
+            "You already have a membership request for this team"));
   }
 
   public TeamMembershipResponse inviteUserToTeam(
@@ -76,12 +79,6 @@ public class EventTeamRequestService {
     eventTeamService.ensureTeamCanAcceptMember(eventId, teamId);
     eventTeamService.ensureNotTeamMember(
         teamId, invitee.getId(), "User is already a member of this team");
-    ensureNoPendingMembershipRequest(
-        teamId, invitee.getId(), "User already has a membership request for this team");
-
-    TeamMembershipRequest request =
-        new TeamMembershipRequest(teamId, invitee.getId(), RequestType.INVITATION);
-
     LOGGER.info(
         "UserId={} created invitation for email={} (userId={}) to teamId={} for eventId={}",
         user.getId(),
@@ -89,7 +86,12 @@ public class EventTeamRequestService {
         invitee.getId(),
         teamId,
         eventId);
-    return new TeamMembershipResponse(teamMembershipRequestDao.create(request));
+    return toResponse(
+        createOrReopenPendingMembershipRequest(
+            teamId,
+            invitee.getId(),
+            RequestType.INVITATION,
+            "User already has a membership request for this team"));
   }
 
   public void deleteInvitation(Long eventId, Long teamId, Long userId, UserPrincipal user) {
@@ -133,7 +135,7 @@ public class EventTeamRequestService {
         eventId,
         user.getId());
     return teamMembershipRequestDao.getPendingRequestsByTeamId(teamId).stream()
-        .map(TeamMembershipResponse::new)
+        .map(this::toResponse)
         .toList();
   }
 
@@ -141,7 +143,7 @@ public class EventTeamRequestService {
     eventTeamService.ensureVerified(user);
     LOGGER.info("Fetching pending requests for userId={}", user.getId());
     return teamMembershipRequestDao.getPendingRequestsByUserId(user.getId()).stream()
-        .map(TeamMembershipResponse::new)
+        .map(this::toResponse)
         .toList();
   }
 
@@ -218,21 +220,72 @@ public class EventTeamRequestService {
         membershipRequest.getTeamId(),
         response.getStatus());
 
-    return new TeamMembershipResponse(teamMembershipRequestDao.update(membershipRequest));
+    if (response.isRejected()) {
+      TeamMembershipResponse result = toResponse(membershipRequest);
+      teamMembershipRequestDao.delete(membershipRequest);
+      return result;
+    }
+
+    return toResponse(teamMembershipRequestDao.update(membershipRequest));
   }
 
-  private void ensureNoPendingMembershipRequest(Long teamId, Long userId, String message) {
-    teamMembershipRequestDao
-        .findByTeamIdAndUserId(teamId, userId)
-        .filter(request -> request.getStatus() == RequestStatus.PENDING)
-        .ifPresent(
-            existing -> {
-              LOGGER.info(
-                  "UserId={} already has a pending membership request for teamId={}",
-                  userId,
-                  teamId);
-              throw new ConflictException(message);
-            });
+  private TeamMembershipResponse toResponse(TeamMembershipRequest request) {
+    Long eventId = eventTeamService.resolveEventIdForTeam(request.getTeamId());
+    User subject =
+        userDao.getUserById(request.getUserId()).orElse(null);
+    return new TeamMembershipResponse(request, eventId, subject);
+  }
+
+  private TeamMembershipRequest createOrReopenPendingMembershipRequest(
+      Long teamId, Long userId, RequestType type, String pendingConflictMessage) {
+    Optional<TeamMembershipRequest> existing =
+        teamMembershipRequestDao.findByTeamIdAndUserId(teamId, userId);
+
+    if (existing.isEmpty()) {
+      try {
+        return teamMembershipRequestDao.create(new TeamMembershipRequest(teamId, userId, type));
+      } catch (PersistenceException e) {
+        if (e.getCause() instanceof ConstraintViolationException) {
+          return reopenExistingMembershipRequest(teamId, userId, type, pendingConflictMessage);
+        }
+        throw e;
+      }
+    }
+
+    TeamMembershipRequest request = existing.get();
+    if (request.getStatus() == RequestStatus.PENDING) {
+      LOGGER.info(
+          "UserId={} already has a pending membership request for teamId={}", userId, teamId);
+      throw new ConflictException(pendingConflictMessage);
+    }
+
+    return reopenMembershipRequest(request, type);
+  }
+
+  private TeamMembershipRequest reopenExistingMembershipRequest(
+      Long teamId, Long userId, RequestType type, String pendingConflictMessage) {
+    TeamMembershipRequest request =
+        teamMembershipRequestDao
+            .findByTeamIdAndUserId(teamId, userId)
+            .orElseThrow(() -> new ConflictException(pendingConflictMessage));
+    if (request.getStatus() == RequestStatus.PENDING) {
+      throw new ConflictException(pendingConflictMessage);
+    }
+    return reopenMembershipRequest(request, type);
+  }
+
+  private TeamMembershipRequest reopenMembershipRequest(
+      TeamMembershipRequest request, RequestType type) {
+    LOGGER.info(
+        "Reopening membership request id={} for userId={} on teamId={} as type={}",
+        request.getId(),
+        request.getUserId(),
+        request.getTeamId(),
+        type);
+    request.setStatus(RequestStatus.PENDING);
+    request.setType(type);
+    request.setRespondedAt(null);
+    return teamMembershipRequestDao.update(request);
   }
 
   private TeamMembershipRequest getPendingMembershipRequest(

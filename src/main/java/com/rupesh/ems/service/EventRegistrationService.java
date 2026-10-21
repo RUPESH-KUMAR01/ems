@@ -11,6 +11,7 @@ import com.rupesh.ems.exceptions.ConflictException;
 import com.rupesh.ems.exceptions.ForbiddenException;
 import com.rupesh.ems.exceptions.NotFoundException;
 import java.time.Instant;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,5 +152,11 @@ public class EventRegistrationService {
     registration.setStatus(RegistrationStatus.CANCELLED);
     LOGGER.info("Registration with ID {} has been cancelled", registrationId);
     registrationDao.update(registration);
+  }
+
+  public List<EventRegistrationResponse> listForUser(Long userId) {
+    return registrationDao.findByUserId(userId).stream()
+        .map(EventRegistrationResponse::new)
+        .toList();
   }
 }

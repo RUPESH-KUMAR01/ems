@@ -22,7 +22,7 @@ database:
   user: postgres
   password: postgres
 
-  url: jdbc:postgresql://localhost:5433/ems
+  url: jdbc:postgresql://localhost:5432/ems
 
   properties:
     charSet: UTF-8
@@ -52,9 +52,11 @@ emailservice:
   password: "ems123@"
 
 razorpay:
-  keyId: "rzp_test_YOUR_KEY_ID"
-  keySecret: "YOUR_KEY_SECRET"
-  webhookSecret: "YOUR_WEBHOOK_SECRET"
+  # Set mockPayments: true only for offline dev without Razorpay keys.
+  mockPayments: false
+  keyId: ${RAZORPAY_KEY_ID:-rzp_test_unused}
+  keySecret: ${RAZORPAY_KEY_SECRET:-unused}
+  webhookSecret: ${RAZORPAY_WEBHOOK_SECRET:-local-dev-webhook}
 
 twilio:
   accountSid: "ACXXXXXXXXXXXXXXXX"

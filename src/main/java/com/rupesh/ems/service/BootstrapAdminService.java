@@ -34,9 +34,9 @@ public class BootstrapAdminService {
     if (existingUser.isPresent()) {
       User user = existingUser.get();
       user.setRole(Role.ADMIN);
-      userDao.update(user);
       user.setEmailVerified(true);
       user.setPhoneVerified(true);
+      userDao.update(user);
       LOGGER.info("Admin user with email={} already exists. Updated role to ADMIN.", email);
       return;
     }

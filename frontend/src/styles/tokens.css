@@ -1,0 +1,25 @@
+:root {
+  --paper: #f6f3ed;
+  --surface: #ffffff;
+  --ink: #1a1814;
+  --ink-muted: #5c574f;
+  --signal: #c43d2f;
+  --stamp: #2d4a3e;
+  --mint: #3d8b7a;
+  --border: #ddd6c8;
+  --shadow: rgba(26, 24, 20, 0.08);
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #121110;
+  --surface: #1c1a17;
+  --ink: #f0ebe3;
+  --ink-muted: #a39e94;
+  --signal: #e85a4f;
+  --stamp: #6ba892;
+  --mint: #5cb8a3;
+  --border: #2e2b26;
+  --shadow: rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}

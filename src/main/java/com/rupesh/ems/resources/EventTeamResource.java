@@ -127,6 +127,19 @@ public class EventTeamResource {
     return new MessageResponse("User removed from team successfully");
   }
 
+  @DELETE
+  @Path("/{teamId}/leave")
+  @UnitOfWork
+  public MessageResponse leaveTeam(
+      @PathParam("eventId") Long eventId,
+      @PathParam("teamId") Long teamId,
+      @Auth UserPrincipal user) {
+    LOGGER.info(
+        "UserId={} leaving teamId={} for eventId={}", user.getId(), teamId, eventId);
+    eventTeamService.leaveTeam(eventId, teamId, user);
+    return new MessageResponse("You left the team successfully");
+  }
+
   @PUT
   @Path("/{teamId}/owner/{userId}")
   @UnitOfWork

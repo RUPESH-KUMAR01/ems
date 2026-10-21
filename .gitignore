@@ -24,3 +24,7 @@ docs/
 .devlog.toml
 
 .agents
+
+# Local secrets (use .env.example as template)
+.env
+config.local.yml

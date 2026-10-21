@@ -57,7 +57,8 @@ public class EventTeamService {
     ensureTeamEvent(event);
     ensureRegistrationOpen(event);
     ensureTeamNameAvailable(eventId, request.getName(), null);
-    ensureNotParticipantofEvent(eventId, user.getId());
+    ensureNotInTeamForEvent(eventId, user.getId());
+    ensureNoPendingTeamRequestForEvent(eventId, user.getId());
 
     Team team = new Team(eventId, request.getName(), user.getId());
     team.setMemberCount(1); // The owner is the first member
@@ -96,6 +97,13 @@ public class EventTeamService {
         eventId,
         user.getId());
     return new TeamResponse(teamDao.update(team));
+  }
+
+  public Long resolveEventIdForTeam(Long teamId) {
+    return teamDao
+        .getTeamById(teamId)
+        .orElseThrow(() -> new NotFoundException("Team not found"))
+        .getEventId();
   }
 
   public TeamResponse getTeamById(Long eventId, Long teamId, UserPrincipal user) {
@@ -163,6 +171,29 @@ public class EventTeamService {
       throw new BadRequestException("Owner cannot be removed from team");
     }
 
+    removeMemberFromTeam(team, eventId, teamId, userId);
+  }
+
+  public void leaveTeam(Long eventId, Long teamId, UserPrincipal user) {
+    ensureVerified(user);
+
+    Event event = getEventOrThrow(eventId);
+    ensureRegistrationDeadlineNotPassed(event);
+
+    Team team = getEventTeam(eventId, teamId);
+    ensureTeamRegistrationNotCompleted(eventId, teamId);
+
+    if (team.getOwnerId().equals(user.getId())) {
+      throw new BadRequestException(
+          "Team owners cannot leave. Transfer ownership or delete the team instead.");
+    }
+
+    LOGGER.info(
+        "UserId={} leaving teamId={} for eventId={}", user.getId(), teamId, eventId);
+    removeMemberFromTeam(team, eventId, teamId, user.getId());
+  }
+
+  private void removeMemberFromTeam(Team team, Long eventId, Long teamId, Long userId) {
     TeamMember membership =
         teamMemberDao
             .findByTeamIdAndUserId(teamId, userId)
@@ -173,7 +204,7 @@ public class EventTeamService {
                 });
 
     teamMemberDao.delete(membership);
-    team.setMemberCount(team.getMemberCount() - 1);
+    team.setMemberCount(Math.max(0, team.getMemberCount() - 1));
     teamDao.update(team);
     LOGGER.info(
         "User with userId={} removed from teamId={} of eventId={}", userId, teamId, eventId);
@@ -406,13 +437,32 @@ public class EventTeamService {
   }
 
   public void ensureNotParticipantofEvent(Long eventId, Long userId) {
+    ensureNotInTeamForEvent(eventId, userId);
+  }
+
+  public void ensureNotInTeamForEvent(Long eventId, Long userId) {
     teamMemberDao
         .getMembershipByEventIdAndUserId(eventId, userId)
         .ifPresent(
             existing -> {
               LOGGER.warn(
-                  "User with userId={} is already a participant of eventId={}", userId, eventId);
-              throw new ConflictException("You are already a participant of this event");
+                  "User with userId={} is already on a team for eventId={}", userId, eventId);
+              throw new ConflictException(
+                  "You are already on a team for this event. Leave that team before creating another.");
+            });
+  }
+
+  public void ensureNoPendingTeamRequestForEvent(Long eventId, Long userId) {
+    teamMembershipRequestDao
+        .findPendingRequestForEventAndUser(eventId, userId)
+        .ifPresent(
+            pending -> {
+              LOGGER.warn(
+                  "User with userId={} has a pending team request for eventId={}",
+                  userId,
+                  eventId);
+              throw new ConflictException(
+                  "You already have a pending team request for this event. Withdraw it or wait for a response before creating a team.");
             });
   }
 
