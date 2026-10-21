@@ -146,7 +146,7 @@ export function TeamsPage() {
   )
 
   return (
-    <div className="space-y-8">
+    <div className="account-page space-y-8">
       <div>
         <h1 className="text-3xl font-bold">My teams</h1>
         <p className="mt-1 text-sm text-ink-muted">
