@@ -178,3 +178,7 @@
 .landing-page{padding-left:clamp(16px,2.5vw,36px);padding-right:clamp(16px,2.5vw,36px)}
 .market-home,.opportunities-page,.event-detail-page{padding-left:clamp(16px,2.5vw,36px);padding-right:clamp(16px,2.5vw,36px)}
 @media(max-width:760px){.landing-page,.market-home,.opportunities-page,.event-detail-page{padding-left:16px;padding-right:16px}}
+
+/* Keep account pages aligned with the marketplace page gutters. */
+.account-page{max-width:1440px;margin-inline:auto;padding:clamp(24px,3vw,42px) clamp(16px,2.5vw,36px) 80px}
+@media(max-width:760px){.account-page{padding:24px 16px 90px}}
